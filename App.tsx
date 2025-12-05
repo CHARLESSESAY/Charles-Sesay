@@ -65,7 +65,7 @@ const INITIAL_COMPANIES: Company[] = [
     status: 'Active',
     managementBoard: ['Amara Bangura', 'Sarah Cole'], 
     contactEmail: 'info@lionmines.sl',
-    contactPhone: '+232 76 123 456',
+    contactPhone: '+23278 875269', // Updated registered number
     beneficialOwners: ['Global Mining Corp', 'Ibrahim Bah'],
     taxDebt: 0,
     commercialPledges: 2,
@@ -100,7 +100,7 @@ const INITIAL_COMPANIES: Company[] = [
     status: 'Active',
     managementBoard: ['David Mansaray'],
     contactEmail: 'hello@salonetech.com',
-    contactPhone: '+232 99 111 222',
+    contactPhone: '+23232636816', // Updated registered number
     beneficialOwners: ['David Mansaray'],
     taxDebt: 5000,
     commercialPledges: 0,
@@ -300,7 +300,6 @@ export default function App() {
   // Search State
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedForm, setSelectedForm] = useState('');
-  const [minCapital, setMinCapital] = useState('');
   const [dateFrom, setDateFrom] = useState('');
   const [showFilters, setShowFilters] = useState(false);
 
@@ -308,10 +307,12 @@ export default function App() {
   const [currentUser, setCurrentUser] = useState<{name: string, role: 'USER' | 'ADMIN' | 'BUSINESS', companyId?: string} | null>(null);
   const [loginTab, setLoginTab] = useState<'REGISTRAR' | 'BUSINESS'>('REGISTRAR');
   const [businessIdInput, setBusinessIdInput] = useState('');
+  const [phoneNumberInput, setPhoneNumberInput] = useState('');
   // 2FA State
   const [loginStep, setLoginStep] = useState<'CREDENTIALS' | 'OTP'>('CREDENTIALS');
   const [otpInput, setOtpInput] = useState('');
   const [generatedOtp, setGeneratedOtp] = useState<string | null>(null);
+  const [mockSmsNotification, setMockSmsNotification] = useState<string | null>(null);
 
   // Reporting/Editing State
   const [reportingCompanyId, setReportingCompanyId] = useState<string | null>(null);
@@ -358,11 +359,10 @@ export default function App() {
       const termLower = searchTerm.toLowerCase();
       const matchesTerm = c.name.toLowerCase().includes(termLower) || c.registryCode.toLowerCase().includes(termLower);
       const matchesForm = selectedForm ? c.legalForm === selectedForm : true;
-      const matchesCapital = minCapital ? c.capital >= Number(minCapital) : true;
       const matchesDate = dateFrom ? new Date(c.registrationDate) >= new Date(dateFrom) : true;
-      return matchesTerm && matchesForm && matchesCapital && matchesDate;
+      return matchesTerm && matchesForm && matchesDate;
     });
-  }, [companies, searchTerm, selectedForm, minCapital, dateFrom]);
+  }, [companies, searchTerm, selectedForm, dateFrom]);
   
   const selectedCompany = companies.find(c => c.id === selectedCompanyId);
 
@@ -371,22 +371,38 @@ export default function App() {
   const handleLogin = (role: 'USER' | 'ADMIN') => { setCurrentUser({ name: role === 'ADMIN' ? 'Registrar Admin' : 'Amara Bangura', role: role }); setView(role === 'ADMIN' ? 'ADMIN_DASHBOARD' : 'PORTAL_DASHBOARD'); };
   
   const handleBusinessCredentialCheck = () => {
-      const company = companies.find(c => c.registryCode === businessIdInput.trim());
-      if (company) {
+      const company = companies.find(c => c.registryCode.toLowerCase() === businessIdInput.trim().toLowerCase());
+      
+      if (!company) {
+          alert("Invalid Business Registry Code");
+          return;
+      }
+
+      // Robust Phone Normalization
+      const cleanInput = phoneNumberInput.replace(/\D/g, '');
+      const cleanStored = company.contactPhone.replace(/\D/g, '');
+      
+      const inputSuffix = cleanInput.slice(-8); 
+      const storedSuffix = cleanStored.slice(-8);
+
+      if (inputSuffix === storedSuffix && inputSuffix.length >= 6) {
           // Simulate generating OTP
           const newOtp = Math.floor(1000 + Math.random() * 9000).toString();
           setGeneratedOtp(newOtp);
           setLoginStep('OTP');
-          // In a real app, this would be an SMS service
-          setTimeout(() => alert(`MOCK SMS to ${company.contactPhone}:\nYour SL Business Registry Access Code is: ${newOtp}`), 500);
+          
+          // Show simulated SMS notification
+          setMockSmsNotification(`New Message: Your SL Business Registry code is ${newOtp}`);
+          setTimeout(() => setMockSmsNotification(null), 10000); // Clear after 10s
+
       } else {
-          alert("Invalid Business Registry Code");
+          alert(`Phone number mismatch. Please enter the number registered with ${company.name}.\n(Hint: It ends with ...${company.contactPhone.slice(-4)})`);
       }
   };
 
   const handleBusinessOtpCheck = () => {
       if (otpInput === generatedOtp) {
-          const company = companies.find(c => c.registryCode === businessIdInput.trim());
+          const company = companies.find(c => c.registryCode.toLowerCase() === businessIdInput.trim().toLowerCase());
           if (company) {
              setCurrentUser({ name: company.name, role: 'BUSINESS', companyId: company.id }); 
              setView('PORTAL_DASHBOARD');
@@ -394,13 +410,14 @@ export default function App() {
              setLoginStep('CREDENTIALS');
              setOtpInput('');
              setGeneratedOtp(null);
+             setMockSmsNotification(null);
           }
       } else {
           alert("Incorrect Access Code");
       }
   };
 
-  const handleLogout = () => { setCurrentUser(null); setBusinessIdInput(''); setView('SEARCH'); setLoginStep('CREDENTIALS'); };
+  const handleLogout = () => { setCurrentUser(null); setBusinessIdInput(''); setPhoneNumberInput(''); setView('SEARCH'); setLoginStep('CREDENTIALS'); setMockSmsNotification(null); };
   const checkNameAvailability = (name: string) => { if (!name.trim()) { setNameAvailability('IDLE'); return; } setNameAvailability('CHECKING'); setTimeout(() => { const taken = companies.some(c => c.name.toLowerCase() === name.toLowerCase()); setNameAvailability(taken ? 'TAKEN' : 'AVAILABLE'); }, 800); };
   const handleDueDiligence = (id: string) => { setSelectedCompanyId(id); setView('DUE_DILIGENCE'); };
 
@@ -465,7 +482,22 @@ export default function App() {
       alert("Entity Added to Registry");
   };
 
-  const downloadData = (format: string) => { alert(`Downloading ${format}...`); };
+  const handleStatusChange = (companyId: string, newStatus: string) => {
+    setCompanies(prev => prev.map(c => c.id === companyId ? { ...c, status: newStatus as any } : c));
+    addAuditLog(companyId, 'STATUS_CHANGE', `Status changed to ${newStatus}`, 'Registrar');
+  };
+
+  const downloadData = (format: string) => {
+    // Mock download logic
+    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(companies));
+    const downloadAnchorNode = document.createElement('a');
+    downloadAnchorNode.setAttribute("href",     dataStr);
+    downloadAnchorNode.setAttribute("download", "registry_data." + format.toLowerCase());
+    document.body.appendChild(downloadAnchorNode); // required for firefox
+    downloadAnchorNode.click();
+    downloadAnchorNode.remove();
+    alert(`Downloading Bulk Data in ${format} format...`);
+  };
 
   // --- RENDERERS ---
 
@@ -492,6 +524,9 @@ export default function App() {
              <button onClick={() => setSignLanguageMode(!signLanguageMode)} className={`p-2.5 rounded-full transition-all duration-300 ${signLanguageMode ? 'bg-white text-blue-900' : 'text-blue-300 hover:text-white hover:bg-white/10'}`}>
                 <Hand className="w-5 h-5" />
              </button>
+             <a href="https://nib.gov.sl" target="_blank" rel="noreferrer" className="hidden md:flex items-center gap-2 text-xs font-bold text-blue-300 hover:text-white border border-blue-500/50 px-3 py-1.5 rounded-lg transition-colors">
+                <ExternalLink className="w-3 h-3" /> NIB Link
+             </a>
             <div className="hidden md:flex items-center bg-black/20 p-1.5 rounded-xl mr-2 gap-1 border border-white/5">
                 {(['en', 'zh', 'fr', 'es', 'hi', 'ru'] as LangCode[]).map((l) => (
                     <button key={l} onClick={() => setLang(l)} className={`px-2.5 py-1 text-[10px] font-bold rounded-lg transition-all ${lang === l ? 'bg-blue-600 shadow text-white' : 'text-blue-400 hover:text-white'}`}>
@@ -554,7 +589,7 @@ export default function App() {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-10 relative z-20 pb-20">
-        {showFilters && <SearchFilters searchTerm={searchTerm} setSearchTerm={setSearchTerm} selectedForm={selectedForm} setSelectedForm={setSelectedForm} minCapital={minCapital} setMinCapital={setMinCapital} dateFrom={dateFrom} setDateFrom={setDateFrom} />}
+        {showFilters && <SearchFilters searchTerm={searchTerm} setSearchTerm={setSearchTerm} selectedForm={selectedForm} setSelectedForm={setSelectedForm} dateFrom={dateFrom} setDateFrom={setDateFrom} />}
         <div className="mt-12">
           <div className="flex justify-between items-end mb-6">
             <h3 className="text-2xl font-serif font-bold text-slate-800">Registered Entities</h3>
@@ -730,7 +765,6 @@ export default function App() {
                             <h3 className="text-lg font-serif font-bold text-slate-900 mb-6 pb-2 border-b border-slate-100">{t('details')}</h3>
                             <dl className="space-y-6">
                                 <div><dt className="text-xs font-bold text-slate-400 uppercase">{t('status')}</dt><dd className="mt-1"><span className={`inline-flex items-center px-2 py-0.5 rounded text-sm font-bold ${selectedCompany.status === 'Active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>{tData(selectedCompany.status)}</span></dd></div>
-                                <div><dt className="text-xs font-bold text-slate-400 uppercase">{t('capital')}</dt><dd className="mt-1 text-lg font-serif">{tCurrency(selectedCompany.capital)}</dd></div>
                                 <div><dt className="text-xs font-bold text-slate-400 uppercase">{t('address')}</dt><dd className="mt-1 text-slate-800 flex gap-2"><MapPin className="w-4 h-4 text-slate-400" />{tData(selectedCompany.address)}</dd></div>
                             </dl>
                         </div>
@@ -745,8 +779,8 @@ export default function App() {
                 )}
                 {activeTab === 'REPORTS' && (
                     <table className="min-w-full divide-y divide-slate-200">
-                        <thead className="bg-slate-50"><tr><th className="px-6 py-3 text-left text-xs font-bold text-slate-500 uppercase">{t('year')}</th><th className="px-6 py-3 text-left text-xs font-bold text-slate-500 uppercase">{t('revenue')}</th><th className="px-6 py-3 text-left text-xs font-bold text-slate-500 uppercase">{t('status')}</th></tr></thead>
-                        <tbody className="divide-y divide-slate-200">{selectedCompany.reports.map(r => (<tr key={r.year}><td className="px-6 py-4 font-bold text-slate-900">{r.year}</td><td className="px-6 py-4 font-serif text-slate-600">{tCurrency(r.revenue || 0)}</td><td className="px-6 py-4"><span className="px-2 py-1 rounded-full bg-slate-100 text-xs font-bold text-slate-600">{tData(r.status)}</span></td></tr>))}</tbody>
+                        <thead className="bg-slate-50"><tr><th className="px-6 py-3 text-left text-xs font-bold text-slate-500 uppercase">{t('year')}</th><th className="px-6 py-3 text-left text-xs font-bold text-slate-500 uppercase">{t('status')}</th></tr></thead>
+                        <tbody className="divide-y divide-slate-200">{selectedCompany.reports.map(r => (<tr key={r.year}><td className="px-6 py-4 font-bold text-slate-900">{r.year}</td><td className="px-6 py-4"><span className="px-2 py-1 rounded-full bg-slate-100 text-xs font-bold text-slate-600">{tData(r.status)}</span></td></tr>))}</tbody>
                     </table>
                 )}
                 {activeTab === 'GOVERNANCE' && (
@@ -833,12 +867,28 @@ export default function App() {
                         <label className="block text-xs font-bold text-slate-500 uppercase mb-2">Access Key</label>
                         <input type="password" className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="••••••••" />
                     </div>
+                    <div>
+                        <label className="block text-xs font-bold text-slate-500 uppercase mb-2">Registered Phone Number</label>
+                        <input type="tel" value={phoneNumberInput} onChange={(e) => setPhoneNumberInput(e.target.value)} className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="+232..." />
+                    </div>
                     <button onClick={handleBusinessCredentialCheck} className="w-full bg-blue-900 text-white py-3 rounded-xl font-bold hover:bg-blue-800 transition-colors mt-2 shadow-lg flex items-center justify-center gap-2">
                         Verify & Send Code <ArrowRight className="w-4 h-4" />
                     </button>
                  </>
              ) : (
                  <>
+                    {/* Simulated SMS Notification */}
+                    {mockSmsNotification && (
+                        <div className="mb-4 p-3 bg-green-100 border border-green-200 text-green-800 rounded-xl flex items-center gap-3 animate-fade-in-up shadow-sm">
+                            <div className="bg-green-200 p-2 rounded-lg"><Smartphone className="w-5 h-5 text-green-700" /></div>
+                            <div>
+                                <p className="text-xs font-bold uppercase opacity-70">Simulated SMS</p>
+                                <p className="font-bold">{mockSmsNotification}</p>
+                            </div>
+                            <button onClick={() => setMockSmsNotification(null)} className="ml-auto text-green-600 hover:text-green-800"><XCircle className="w-5 h-5" /></button>
+                        </div>
+                    )}
+
                     <div className="p-4 bg-blue-50 rounded-xl border border-blue-100 text-center mb-2">
                         <Smartphone className="w-8 h-8 text-blue-600 mx-auto mb-2 animate-bounce" />
                         <p className="text-sm font-bold text-blue-900">2-Factor Authentication</p>
@@ -962,6 +1012,48 @@ export default function App() {
             </button>
         </form>
       </div>
+
+       {/* Status Management */}
+       <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden mb-10">
+           <div className="p-6 border-b border-slate-100 bg-slate-50 flex items-center justify-between">
+              <h3 className="font-bold text-slate-800 flex items-center gap-2"><Settings className="w-5 h-5 text-slate-500" /> Registry Status Management</h3>
+           </div>
+           <div className="max-h-96 overflow-y-auto">
+               <table className="w-full text-sm text-left">
+                   <thead className="bg-slate-50 text-slate-500 font-bold uppercase">
+                       <tr>
+                           <th className="px-6 py-3">Company</th>
+                           <th className="px-6 py-3">Registry Code</th>
+                           <th className="px-6 py-3">Current Status</th>
+                           <th className="px-6 py-3">Action</th>
+                       </tr>
+                   </thead>
+                   <tbody className="divide-y divide-slate-100">
+                       {companies.map(c => (
+                           <tr key={c.id} className="hover:bg-slate-50">
+                               <td className="px-6 py-4 font-bold text-slate-900">{c.name}</td>
+                               <td className="px-6 py-4 font-mono text-slate-500">{c.registryCode}</td>
+                               <td className="px-6 py-4">
+                                   <span className={`px-2 py-1 rounded-full text-xs font-bold ${c.status === 'Active' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>{c.status}</span>
+                               </td>
+                               <td className="px-6 py-4">
+                                   <select 
+                                       className="bg-white border border-slate-300 rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500 text-xs font-bold text-slate-700"
+                                       value={c.status}
+                                       onChange={(e) => handleStatusChange(c.id, e.target.value)}
+                                   >
+                                       <option value="Active">Active</option>
+                                       <option value="Inactive">Inactive</option>
+                                       <option value="Liquidated">Liquidated</option>
+                                       <option value="Bankruptcy">Bankruptcy</option>
+                                   </select>
+                               </td>
+                           </tr>
+                       ))}
+                   </tbody>
+               </table>
+           </div>
+       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
         <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
@@ -1226,9 +1318,11 @@ export default function App() {
                 <div className="bg-blue-50 w-12 h-12 rounded-xl flex items-center justify-center text-blue-600 mb-4"><Database className="w-6 h-6" /></div>
                 <h3 className="text-xl font-bold text-slate-900 mb-2">Registered Companies Dataset</h3>
                 <p className="text-slate-500 mb-6 text-sm">Full list of active and inactive companies, including registration dates and legal forms. Updated daily.</p>
-                <div className="flex gap-3">
+                <div className="flex flex-wrap gap-3">
                     <button onClick={() => downloadData('CSV')} className="px-4 py-2 bg-slate-100 text-slate-700 font-bold rounded-lg text-sm hover:bg-slate-200">Download CSV</button>
-                    <button onClick={() => downloadData('JSON')} className="px-4 py-2 bg-slate-100 text-slate-700 font-bold rounded-lg text-sm hover:bg-slate-200">API Access</button>
+                    <button onClick={() => downloadData('JSON')} className="px-4 py-2 bg-slate-100 text-slate-700 font-bold rounded-lg text-sm hover:bg-slate-200">Download JSON</button>
+                    <button onClick={() => downloadData('XML')} className="px-4 py-2 bg-slate-100 text-slate-700 font-bold rounded-lg text-sm hover:bg-slate-200">Download XML</button>
+                    <button onClick={() => downloadData('XLSX')} className="px-4 py-2 bg-slate-100 text-slate-700 font-bold rounded-lg text-sm hover:bg-slate-200">Download Excel</button>
                 </div>
             </div>
             <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 hover:border-blue-300 transition-colors">

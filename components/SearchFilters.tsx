@@ -1,14 +1,12 @@
 import React from 'react';
 import { LegalForm } from '../types';
-import { Filter, Calendar, DollarSign, Briefcase } from 'lucide-react';
+import { Filter, Calendar, Briefcase } from 'lucide-react';
 
 interface Props {
   searchTerm: string;
   setSearchTerm: (s: string) => void;
   selectedForm: string;
   setSelectedForm: (s: string) => void;
-  minCapital: string;
-  setMinCapital: (s: string) => void;
   dateFrom: string;
   setDateFrom: (s: string) => void;
 }
@@ -16,7 +14,6 @@ interface Props {
 export const SearchFilters: React.FC<Props> = ({
   searchTerm, setSearchTerm,
   selectedForm, setSelectedForm,
-  minCapital, setMinCapital,
   dateFrom, setDateFrom
 }) => {
   return (
@@ -28,7 +25,7 @@ export const SearchFilters: React.FC<Props> = ({
         <h2 className="font-bold text-lg font-serif">Refine Registry Search</h2>
       </div>
       
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Legal Form */}
         <div className="space-y-2 group">
           <label className="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-2 group-focus-within:text-blue-700 transition-colors">
@@ -49,20 +46,6 @@ export const SearchFilters: React.FC<Props> = ({
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
             </div>
           </div>
-        </div>
-
-        {/* Min Capital */}
-        <div className="space-y-2 group">
-          <label className="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-2 group-focus-within:text-blue-700 transition-colors">
-            <DollarSign className="w-3 h-3" /> Minimum Capital (SLE)
-          </label>
-          <input
-            type="number"
-            placeholder="e.g. 10,000"
-            value={minCapital}
-            onChange={(e) => setMinCapital(e.target.value)}
-            className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none text-sm transition-all hover:bg-white hover:shadow-sm font-medium"
-          />
         </div>
 
         {/* Registration Date */}
