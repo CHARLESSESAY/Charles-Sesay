@@ -3,6 +3,7 @@ import { Company, LegalForm, ReportStatus, ViewState, AuditLog, AnnualReport, Tr
 import { generateHash, formatCurrency, formatDate } from './utils';
 import { SearchFilters } from './components/SearchFilters';
 import { AIAssistant } from './components/AIAssistant';
+import { EditCompanyDetails } from './components/EditCompanyDetails';
 import { 
   Building2, 
   ShieldCheck, 
@@ -47,107 +48,315 @@ import {
   Layout,
   TrendingUp,
   TrendingDown,
-  ArrowRight
+  ArrowRight,
+  Trash2,
+  Loader2
 } from 'lucide-react';
 
 // --- MOCK DATA ---
 const INITIAL_COMPANIES: Company[] = [
   {
-    id: 'c1',
-    registryCode: 'SL-2023-001245',
-    name: 'Lion Mountains Mining Ltd',
+    id: 'c_africell',
+    registryCode: 'PV 4567',
+    name: 'Africell Sierra Leone Ltd',
     legalForm: LegalForm.LTD,
-    registrationDate: '2020-03-15',
-    capital: 5000000,
-    address: '12 Wilkinson Road, Freetown',
-    website: 'www.lionmines.sl',
-    businessLogo: 'https://placehold.co/200x200/1e3a8a/ffffff?text=LMM',
+    registrationDate: '2005-01-01',
+    capital: 50000000,
+    address: '1 Africell Road, Wilberforce, Freetown',
+    website: 'www.africell.sl',
+    businessLogo: 'https://placehold.co/200x200/d946ef/ffffff?text=Africell',
     status: 'Active',
-    managementBoard: ['Amara Bangura', 'Sarah Cole'], 
-    contactEmail: 'info@lionmines.sl',
-    contactPhone: '+23278 875269', // Updated registered number
-    beneficialOwners: ['Global Mining Corp', 'Ibrahim Bah'],
+    managementBoard: [{ name: 'Ziad Dalloul', position: 'Group CEO' }, { name: 'Shadi Gerjawi', position: 'Managing Director' }],
+    contactEmail: 'info@africell.sl',
+    contactPhone: '078875269', // Updated
+    beneficialOwners: ['Lintel Capital', 'Africell Holding'],
     taxDebt: 0,
-    commercialPledges: 2,
-    relationships: [
-        { entity: 'Global Mining Corp', type: 'Parent' },
-        { entity: 'Lion Transport Services', type: 'Subsidiary' }
-    ],
+    commercialPledges: 5,
+    relationships: [{ entity: 'Lintel Capital', type: 'Parent' }],
+    ownershipGraphUrl: 'https://placehold.co/600x400/f0f9ff/1e3a8a?text=Africell+Structure+Graph',
     reports: [
-      { year: 2023, status: ReportStatus.APPROVED, revenue: 12000000, transactionVolume: 4500, submissionDate: '2024-02-10', filedBy: 'Sarah Cole' },
-      { year: 2022, status: ReportStatus.APPROVED, revenue: 9500000, transactionVolume: 3200, submissionDate: '2023-03-01', filedBy: 'Sarah Cole' }
+      { year: 2023, status: ReportStatus.APPROVED, revenue: 450000000, transactionVolume: 150000, submissionDate: '2024-03-15', filedBy: 'Finance Director' }
     ],
     history: [
-      { id: 'h1', timestamp: '2024-02-10T14:30:00Z', action: 'REPORT_SUBMITTED', details: 'Annual Report 2023 submitted', previousHash: '0x3a1f8...', hash: '0x9f2b3...', actor: 'User: S.Cole' },
-      { id: 'h2', timestamp: '2020-03-15T09:00:00Z', action: 'REGISTRATION', details: 'Company Registered', previousHash: '0x00000...', hash: '0x3a1f8...', actor: 'Registrar' }
+      { id: 'h_a1', timestamp: '2005-01-01T09:00:00Z', action: 'REGISTRATION', details: 'Initial Registration - Mobile Operator', previousHash: '0x00000...', hash: '0x8f2a1...', actor: 'Registrar' }
     ],
-    transactions: [
-        { id: 't1', date: '2024-03-01', description: 'Equipment Export', amount: 45000, type: 'CREDIT', category: 'Sales' },
-        { id: 't2', date: '2024-03-05', description: 'Logistics Payment', amount: 12000, type: 'DEBIT', category: 'Operations' }
-    ],
+    transactions: [],
     isWebsitePublished: true
   },
   {
-    id: 'c2',
-    registryCode: 'SL-2021-008821',
-    name: 'Salone Tech Innovators',
-    legalForm: LegalForm.PLC,
-    registrationDate: '2021-06-20',
-    capital: 150000,
-    address: '45 Siaka Stevens Street, Freetown',
-    website: 'www.salonetech.com',
-    businessLogo: 'https://placehold.co/200x200/2563eb/ffffff?text=STI',
+    id: 'c_airtel',
+    registryCode: 'PV 8901',
+    name: 'Airtel Sierra Leone Ltd',
+    legalForm: LegalForm.LTD,
+    registrationDate: '2004-06-15',
+    capital: 45000000,
+    address: '25 Main Motor Road, Freetown',
+    website: 'www.airtel.sl',
+    businessLogo: 'https://placehold.co/200x200/ef4444/ffffff?text=Airtel',
     status: 'Active',
-    managementBoard: ['David Mansaray'],
-    contactEmail: 'hello@salonetech.com',
-    contactPhone: '+23232636816', // Updated registered number
-    beneficialOwners: ['David Mansaray'],
-    taxDebt: 5000,
-    commercialPledges: 0,
-    relationships: [
-        { entity: 'Freetown Hub', type: 'Partner' }
-    ],
+    managementBoard: [{ name: 'Sunil Bharti', position: 'Chairman' }, { name: 'Local Director', position: 'Country Manager' }],
+    contactEmail: 'support@airtel.sl',
+    contactPhone: '+232 78 000 000',
+    beneficialOwners: ['Bharti Airtel'],
+    taxDebt: 0,
+    commercialPledges: 3,
+    relationships: [{ entity: 'Bharti Airtel', type: 'Parent' }],
     reports: [
-      { year: 2023, status: ReportStatus.MISSING }
+      { year: 2023, status: ReportStatus.APPROVED, revenue: 380000000, transactionVolume: 120000 }
     ],
     history: [
-      { id: 'h3', timestamp: '2021-06-20T10:15:00Z', action: 'REGISTRATION', details: 'Company Registered', previousHash: '0x00000...', hash: '0x7b4c2...', actor: 'Registrar' }
+      { id: 'h_ai1', timestamp: '2004-06-15T10:00:00Z', action: 'REGISTRATION', details: 'Incorporation', previousHash: '0x00000...', hash: '0x3c4d5...', actor: 'Registrar' }
+    ],
+    transactions: [],
+    isWebsitePublished: true
+  },
+  {
+    id: 'c_slcb',
+    registryCode: 'C.I. 123/1917',
+    name: 'Sierra Leone Commercial Bank',
+    legalForm: LegalForm.PLC,
+    registrationDate: '1917-02-15',
+    capital: 100000000,
+    address: 'Siaka Stevens Street, Freetown',
+    website: 'www.slcb.com',
+    businessLogo: 'https://placehold.co/200x200/1e40af/ffffff?text=SLCB',
+    status: 'Active',
+    managementBoard: [{ name: 'Yusufu A. Silla', position: 'Managing Director' }, { name: 'Board Chair', position: 'Chairman' }],
+    contactEmail: 'info@slcb.com',
+    contactPhone: '+232 22 225 264',
+    beneficialOwners: ['Government of Sierra Leone', 'NASSIT'],
+    taxDebt: 0,
+    commercialPledges: 0,
+    relationships: [{ entity: 'Bank of Sierra Leone', type: 'Partner' }],
+    reports: [
+      { year: 2023, status: ReportStatus.APPROVED, revenue: 85000000, transactionVolume: 500000 }
+    ],
+    history: [
+       { id: 'h_slcb1', timestamp: '1917-02-15T09:00:00Z', action: 'REGISTRATION', details: 'Oldest Bank Registered', previousHash: '0x00000...', hash: '0x1a2b3...', actor: 'Registrar' }
+    ],
+    transactions: [],
+    isWebsitePublished: true
+  },
+  {
+    id: 'c_rokel',
+    registryCode: 'PV 2345',
+    name: 'Rokel Commercial Bank',
+    legalForm: LegalForm.PLC,
+    registrationDate: '2003-04-10',
+    capital: 80000000,
+    address: 'Siaka Stevens Street, Freetown',
+    website: 'www.rokelbank.sl',
+    businessLogo: 'https://placehold.co/200x200/000000/ffffff?text=RCBank',
+    status: 'Active',
+    managementBoard: [{ name: 'Dr. Walton Gilpin', position: 'Managing Director' }],
+    contactEmail: 'info@rokelbank.sl',
+    contactPhone: '+232 76 600 000',
+    beneficialOwners: ['Government of Sierra Leone'],
+    taxDebt: 0,
+    commercialPledges: 1,
+    relationships: [],
+    reports: [
+      { year: 2023, status: ReportStatus.APPROVED, revenue: 75000000, transactionVolume: 450000 }
+    ],
+    history: [
+       { id: 'h_rb1', timestamp: '2003-04-10T11:00:00Z', action: 'REGISTRATION', details: 'Rebranding & Registration', previousHash: '0x00000...', hash: '0x9a8b7...', actor: 'Registrar' }
+    ],
+    transactions: [],
+    isWebsitePublished: true
+  },
+  {
+    id: 'c_lantraco',
+    registryCode: 'BN 5678',
+    name: 'Lantraco Ltd',
+    legalForm: LegalForm.LTD,
+    registrationDate: '1995-08-12',
+    capital: 5000000,
+    address: 'Cline Town, Freetown',
+    website: '',
+    businessLogo: 'https://placehold.co/200x200/64748b/ffffff?text=Lantraco',
+    status: 'Active',
+    managementBoard: [{ name: 'Operations Director', position: 'Director of Logistics' }],
+    contactEmail: 'ops@lantraco.sl',
+    contactPhone: '+232 30 123 456',
+    beneficialOwners: ['Private Shareholders'],
+    taxDebt: 25000,
+    commercialPledges: 2,
+    relationships: [],
+    reports: [
+      { year: 2023, status: ReportStatus.SUBMITTED, revenue: 12000000, transactionVolume: 300 }
+    ],
+    history: [
+       { id: 'h_lan1', timestamp: '1995-08-12T08:00:00Z', action: 'REGISTRATION', details: 'Logistics Company Registered', previousHash: '0x00000...', hash: '0x4d5e6...', actor: 'Registrar' }
     ],
     transactions: [],
     isWebsitePublished: false
   },
   {
-    id: 'c3',
-    registryCode: 'SL-2019-003311',
-    name: 'Bo Agricultural Co-op',
-    legalForm: LegalForm.NGO,
-    registrationDate: '2019-01-10',
-    capital: 25000,
-    address: '5 Bo-Kenema Highway, Bo',
-    website: 'www.bo-agri.org',
-    businessLogo: '', 
+    id: 'c_rutile',
+    registryCode: 'C.I. 456/1960',
+    name: 'Sierra Rutile Ltd',
+    legalForm: LegalForm.LTD,
+    registrationDate: '1960-01-01',
+    capital: 200000000,
+    address: 'Moyamba District',
+    website: 'www.sierra-rutile.com',
+    businessLogo: 'https://placehold.co/200x200/ea580c/ffffff?text=Rutile',
     status: 'Active',
-    managementBoard: ['Chief Kamara'],
-    contactEmail: 'contact@bo-agri.org',
-    contactPhone: '+232 33 444 555',
-    beneficialOwners: ['Community Trust'],
+    managementBoard: [{ name: 'Theuns de Bruyn', position: 'CEO' }],
+    contactEmail: 'info@sierra-rutile.com',
+    contactPhone: '+232 79 999 999',
+    beneficialOwners: ['Iluka Resources'],
+    taxDebt: 0,
+    commercialPledges: 10,
+    relationships: [{ entity: 'Iluka Resources', type: 'Parent' }],
+    reports: [
+      { year: 2023, status: ReportStatus.APPROVED, revenue: 950000000, transactionVolume: 500 }
+    ],
+    history: [
+       { id: 'h_rut1', timestamp: '1960-01-01T09:00:00Z', action: 'REGISTRATION', details: 'Titanium Mining Incorporation', previousHash: '0x00000...', hash: '0x7f8e9...', actor: 'Registrar' }
+    ],
+    transactions: [],
+    isWebsitePublished: true
+  },
+  {
+    id: 'c_london',
+    registryCode: 'PV 7890',
+    name: 'London Mining Co. SL',
+    legalForm: LegalForm.LTD,
+    registrationDate: '2005-01-01',
+    capital: 10000000,
+    address: 'Lunsar, Port Loko District',
+    website: '',
+    businessLogo: 'https://placehold.co/200x200/94a3b8/ffffff?text=LMC',
+    status: 'Liquidated',
+    managementBoard: [{ name: 'Liquidator', position: 'Appointed Admin' }],
+    contactEmail: 'contact@londonmining.sl',
+    contactPhone: '+232 00 000 000',
+    beneficialOwners: ['Creditors'],
+    taxDebt: 500000,
+    commercialPledges: 0,
+    relationships: [],
+    reports: [
+      { year: 2014, status: ReportStatus.APPROVED, revenue: 5000000, transactionVolume: 100 }
+    ],
+    history: [
+       { id: 'h_lon2', timestamp: '2015-02-20T14:00:00Z', action: 'LIQUIDATION', details: 'Company entered liquidation', previousHash: '0x11111...', hash: '0x22222...', actor: 'Court Order' },
+       { id: 'h_lon1', timestamp: '2005-01-01T09:00:00Z', action: 'REGISTRATION', details: 'Iron Ore Mining Registration', previousHash: '0x00000...', hash: '0x11111...', actor: 'Registrar' }
+    ],
+    transactions: [],
+    isWebsitePublished: false
+  },
+  {
+    id: 'c_nic',
+    registryCode: 'C.I. 234/1976',
+    name: 'National Insurance Co. Ltd',
+    legalForm: LegalForm.GOV,
+    registrationDate: '1976-05-20',
+    capital: 25000000,
+    address: 'Walpole Street, Freetown',
+    website: 'www.nic.sl',
+    businessLogo: 'https://placehold.co/200x200/16a34a/ffffff?text=NIC',
+    status: 'Active',
+    managementBoard: [{ name: 'Managing Director', position: 'MD' }, { name: 'Board Chair', position: 'Chairperson' }],
+    contactEmail: 'info@nic.sl',
+    contactPhone: '+232 22 222 000',
+    beneficialOwners: ['Government of Sierra Leone'],
     taxDebt: 0,
     commercialPledges: 0,
     relationships: [],
     reports: [
-      { year: 2023, status: ReportStatus.APPROVED, revenue: 450000, transactionVolume: 120 }
+      { year: 2023, status: ReportStatus.APPROVED, revenue: 35000000, transactionVolume: 25000 }
     ],
     history: [
-      { id: 'h4', timestamp: '2019-01-10T08:30:00Z', action: 'REGISTRATION', details: 'Company Registered', previousHash: '0x00000...', hash: '0x2c9a1...', actor: 'Registrar' }
+       { id: 'h_nic1', timestamp: '1976-05-20T10:00:00Z', action: 'REGISTRATION', details: 'State-owned Insurer Registered', previousHash: '0x00000...', hash: '0x5a6b7...', actor: 'Registrar' }
     ],
     transactions: [],
     isWebsitePublished: true
+  },
+  {
+    id: 'c_fcsc',
+    registryCode: 'BN 3456',
+    name: 'Freetown Cold Storage Co.',
+    legalForm: LegalForm.LTD,
+    registrationDate: '1980-03-15',
+    capital: 15000000,
+    address: 'Wellington Industrial Estate, Freetown',
+    website: '',
+    businessLogo: 'https://placehold.co/200x200/3b82f6/ffffff?text=FCSC',
+    status: 'Active',
+    managementBoard: [{ name: 'Ops Manager', position: 'Operations' }],
+    contactEmail: 'sales@fcsc.sl',
+    contactPhone: '+232 30 999 888',
+    beneficialOwners: ['Private Holdings'],
+    taxDebt: 0,
+    commercialPledges: 1,
+    relationships: [],
+    reports: [
+      { year: 2023, status: ReportStatus.APPROVED, revenue: 22000000, transactionVolume: 8000 }
+    ],
+    history: [
+       { id: 'h_fc1', timestamp: '1980-03-15T09:00:00Z', action: 'REGISTRATION', details: 'Fisheries & Storage Registration', previousHash: '0x00000...', hash: '0x9c8d7...', actor: 'Registrar' }
+    ],
+    transactions: [],
+    isWebsitePublished: false
+  },
+  {
+    id: 'c_tejan',
+    registryCode: 'PV 0123',
+    name: 'Tejan Enterprises',
+    legalForm: LegalForm.SOLE,
+    registrationDate: '2010-11-05',
+    capital: 1000000,
+    address: 'East End, Freetown',
+    website: '',
+    businessLogo: 'https://placehold.co/200x200/f59e0b/ffffff?text=Tejan',
+    status: 'Active',
+    managementBoard: [{ name: 'Tejan Kamara', position: 'Owner' }],
+    contactEmail: 'tejan@enterprises.sl',
+    contactPhone: '+232 77 123 123',
+    beneficialOwners: ['Tejan Kamara'],
+    taxDebt: 1500,
+    commercialPledges: 0,
+    relationships: [],
+    reports: [
+      { year: 2023, status: ReportStatus.MISSING }
+    ],
+    history: [
+       { id: 'h_tej1', timestamp: '2010-11-05T14:30:00Z', action: 'REGISTRATION', details: 'General Merchandise Trader', previousHash: '0x00000...', hash: '0x3f4e5...', actor: 'Registrar' }
+    ],
+    transactions: [],
+    isWebsitePublished: false
   }
 ];
 
 type Tab = 'GENERAL' | 'REPORTS' | 'GOVERNANCE' | 'HISTORY' | 'VISUALIZER';
 type ExtendedViewState = ViewState | 'PORTAL_LOGIN' | 'PORTAL_DASHBOARD' | 'PORTAL_FILE_REPORT' | 'PORTAL_EDIT_DETAILS' | 'NAME_CHECK' | 'OPEN_DATA' | 'DUE_DILIGENCE' | 'GENERATED_WEBSITE';
 type LangCode = 'en' | 'zh' | 'fr' | 'es' | 'hi' | 'ru';
+
+const NEW_COMPANY_ID = 'NEW_ENTRY';
+const EMPTY_COMPANY: Company = {
+  id: NEW_COMPANY_ID,
+  registryCode: '',
+  name: '',
+  legalForm: LegalForm.LTD,
+  registrationDate: new Date().toISOString().split('T')[0],
+  capital: 0,
+  address: '',
+  website: '',
+  businessLogo: '',
+  status: 'Active',
+  reports: [],
+  history: [],
+  managementBoard: [],
+  contactEmail: '',
+  contactPhone: '',
+  beneficialOwners: [],
+  taxDebt: 0,
+  commercialPledges: 0,
+  relationships: [],
+  transactions: [],
+  isWebsitePublished: false
+};
 
 // --- TRANSLATIONS & DICTIONARY ---
 
@@ -181,10 +390,10 @@ const TRANSLATIONS = {
     viewDetails: 'View Details',
     details: 'Details',
     address: 'Address',
-    topMembers: 'Top Members',
+    topMembers: 'Top Runners',
     contact: 'Contact',
     email: 'Email',
-    phone: 'Phone',
+    phone: 'Phone (Secured)',
     beneficialOwners: 'Beneficial Owners',
     commercialPledges: 'Commercial Pledges',
     taxStatus: 'Tax Status',
@@ -308,6 +517,11 @@ export default function App() {
   const [loginTab, setLoginTab] = useState<'REGISTRAR' | 'BUSINESS'>('REGISTRAR');
   const [businessIdInput, setBusinessIdInput] = useState('');
   const [phoneNumberInput, setPhoneNumberInput] = useState('');
+  
+  // Registrar Credentials State
+  const [registrarId, setRegistrarId] = useState('');
+  const [registrarPassword, setRegistrarPassword] = useState('');
+
   // 2FA State
   const [loginStep, setLoginStep] = useState<'CREDENTIALS' | 'OTP'>('CREDENTIALS');
   const [otpInput, setOtpInput] = useState('');
@@ -368,7 +582,18 @@ export default function App() {
 
   // Actions
   const handleViewCompany = (id: string) => { setSelectedCompanyId(id); setActiveTab('GENERAL'); setView('COMPANY_DETAIL'); };
-  const handleLogin = (role: 'USER' | 'ADMIN') => { setCurrentUser({ name: role === 'ADMIN' ? 'Registrar Admin' : 'Amara Bangura', role: role }); setView(role === 'ADMIN' ? 'ADMIN_DASHBOARD' : 'PORTAL_DASHBOARD'); };
+  
+  const handleRegistrarLogin = () => {
+    if (registrarId === '61637582' && registrarPassword === 'Sesay_26') {
+        setCurrentUser({ name: 'Registrar Admin', role: 'ADMIN' });
+        setView('ADMIN_DASHBOARD');
+        // Clear sensitive inputs
+        setRegistrarId('');
+        setRegistrarPassword('');
+    } else {
+        alert("Invalid Registrar Credentials");
+    }
+  };
   
   const handleBusinessCredentialCheck = () => {
       const company = companies.find(c => c.registryCode.toLowerCase() === businessIdInput.trim().toLowerCase());
@@ -417,7 +642,17 @@ export default function App() {
       }
   };
 
-  const handleLogout = () => { setCurrentUser(null); setBusinessIdInput(''); setPhoneNumberInput(''); setView('SEARCH'); setLoginStep('CREDENTIALS'); setMockSmsNotification(null); };
+  const handleLogout = () => { 
+      setCurrentUser(null); 
+      setBusinessIdInput(''); 
+      setPhoneNumberInput(''); 
+      setRegistrarId(''); 
+      setRegistrarPassword(''); 
+      setView('SEARCH'); 
+      setLoginStep('CREDENTIALS'); 
+      setMockSmsNotification(null); 
+  };
+  
   const checkNameAvailability = (name: string) => { if (!name.trim()) { setNameAvailability('IDLE'); return; } setNameAvailability('CHECKING'); setTimeout(() => { const taken = companies.some(c => c.name.toLowerCase() === name.toLowerCase()); setNameAvailability(taken ? 'TAKEN' : 'AVAILABLE'); }, 800); };
   const handleDueDiligence = (id: string) => { setSelectedCompanyId(id); setView('DUE_DILIGENCE'); };
 
@@ -476,6 +711,25 @@ export default function App() {
     if (currentUser?.role === 'BUSINESS') setView('PORTAL_DASHBOARD'); else setEditingCompanyId(null);
   };
 
+  const handleCreateCompany = (updates: Partial<Company>) => {
+      const newId = `c_${Date.now()}`;
+      const newCompany: Company = {
+          ...EMPTY_COMPANY,
+          ...updates,
+          id: newId,
+          // ensure arrays are initialized if not provided
+          managementBoard: updates.managementBoard || [],
+          reports: [],
+          history: [],
+          transactions: [],
+      };
+      setCompanies(prev => [newCompany, ...prev]);
+      addAuditLog(newId, 'REGISTRATION', 'Initial Registration', currentUser?.name || 'Registrar');
+      alert("Entity successfully registered!");
+      setEditingCompanyId(null);
+      setView('ADMIN_DASHBOARD');
+  };
+
   const handleRegistrarAddEntry = (name: string, form: LegalForm, regCode: string) => {
       const newCompany: Company = { id: `c${Date.now()}`, registryCode: regCode, name, legalForm: form, registrationDate: new Date().toISOString().split('T')[0], capital: 0, address: 'Pending', businessLogo: '', website: '', status: 'Active', managementBoard: [], contactEmail: '', contactPhone: '', beneficialOwners: [], taxDebt: 0, commercialPledges: 0, relationships: [], reports: [], history: [], transactions: [], isWebsitePublished: false };
       setCompanies([newCompany, ...companies]);
@@ -524,9 +778,6 @@ export default function App() {
              <button onClick={() => setSignLanguageMode(!signLanguageMode)} className={`p-2.5 rounded-full transition-all duration-300 ${signLanguageMode ? 'bg-white text-blue-900' : 'text-blue-300 hover:text-white hover:bg-white/10'}`}>
                 <Hand className="w-5 h-5" />
              </button>
-             <a href="https://nib.gov.sl" target="_blank" rel="noreferrer" className="hidden md:flex items-center gap-2 text-xs font-bold text-blue-300 hover:text-white border border-blue-500/50 px-3 py-1.5 rounded-lg transition-colors">
-                <ExternalLink className="w-3 h-3" /> NIB Link
-             </a>
             <div className="hidden md:flex items-center bg-black/20 p-1.5 rounded-xl mr-2 gap-1 border border-white/5">
                 {(['en', 'zh', 'fr', 'es', 'hi', 'ru'] as LangCode[]).map((l) => (
                     <button key={l} onClick={() => setLang(l)} className={`px-2.5 py-1 text-[10px] font-bold rounded-lg transition-all ${lang === l ? 'bg-blue-600 shadow text-white' : 'text-blue-400 hover:text-white'}`}>
@@ -537,6 +788,9 @@ export default function App() {
             <div className="h-8 w-px bg-white/10 mx-2 hidden sm:block"></div>
             {currentUser ? (
                 <div className="flex items-center gap-4">
+                    <a href="https://nib.gov.sl" target="_blank" rel="noreferrer" className="hidden md:flex items-center gap-2 text-sm font-bold text-blue-300 hover:text-white">
+                        <ExternalLink className="w-4 h-4" /> NIB Link
+                    </a>
                     <span className="text-sm font-semibold text-blue-100 hidden sm:block">Hi, {currentUser.name}</span>
                     <button onClick={() => currentUser.role === 'ADMIN' ? setView('ADMIN_DASHBOARD') : setView('PORTAL_DASHBOARD')} className={`px-4 py-2 rounded-lg text-sm font-bold bg-blue-600 hover:bg-blue-500 border border-blue-500`}>
                         {t('dashboard')}
@@ -545,6 +799,9 @@ export default function App() {
                 </div>
             ) : (
                 <div className="flex items-center gap-3">
+                    <a href="https://nib.gov.sl" target="_blank" rel="noreferrer" className="hidden md:flex items-center gap-2 text-blue-200 hover:text-white px-2 py-2 font-bold text-sm">
+                        <ExternalLink className="w-4 h-4" /> NIB Link
+                    </a>
                     <button onClick={() => setView('PORTAL_LOGIN')} className="text-blue-200 hover:text-white px-4 py-2 font-bold text-sm flex items-center gap-2">
                         <Lock className="w-4 h-4" /> {t('login')}
                     </button>
@@ -719,6 +976,9 @@ export default function App() {
   const renderCompanyDetail = () => {
     if (!selectedCompany) return null;
     
+    // Authorization Check for Contact Info
+    const isAuthorized = currentUser?.role === 'ADMIN' || (currentUser?.role === 'BUSINESS' && currentUser.companyId === selectedCompany.id);
+
     // Correctly map tab enums to translation keys
     const tabConfig: {id: Tab, label: string}[] = [
         { id: 'GENERAL', label: t('generalInfo') },
@@ -767,12 +1027,39 @@ export default function App() {
                                 <div><dt className="text-xs font-bold text-slate-400 uppercase">{t('status')}</dt><dd className="mt-1"><span className={`inline-flex items-center px-2 py-0.5 rounded text-sm font-bold ${selectedCompany.status === 'Active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>{tData(selectedCompany.status)}</span></dd></div>
                                 <div><dt className="text-xs font-bold text-slate-400 uppercase">{t('address')}</dt><dd className="mt-1 text-slate-800 flex gap-2"><MapPin className="w-4 h-4 text-slate-400" />{tData(selectedCompany.address)}</dd></div>
                             </dl>
+                            
+                            {/* Top Runners Section */}
+                            <h3 className="text-lg font-serif font-bold text-slate-900 mt-8 mb-6 pb-2 border-b border-slate-100">{t('topMembers')}</h3>
+                            <div className="space-y-4">
+                                {selectedCompany.managementBoard.map((member, idx) => (
+                                    <div key={idx} className="flex items-center gap-4 p-3 bg-slate-50 rounded-xl border border-slate-100">
+                                        <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center text-slate-400 border border-slate-200 font-bold text-xs">{member.name.charAt(0)}</div>
+                                        <div>
+                                            <p className="font-bold text-slate-900 text-sm">{member.name}</p>
+                                            <p className="text-xs text-blue-600 font-medium">{member.position}</p>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
                         </div>
                         <div>
                              <h3 className="text-lg font-serif font-bold text-slate-900 mb-6 pb-2 border-b border-slate-100">{t('contact')}</h3>
                              <dl className="space-y-4">
                                 <div><dt className="text-xs font-bold text-slate-400 uppercase">{t('email')}</dt><dd className="text-blue-600 font-medium">{selectedCompany.contactEmail}</dd></div>
-                                <div><dt className="text-xs font-bold text-slate-400 uppercase">{t('phone')}</dt><dd className="text-slate-800">{selectedCompany.contactPhone}</dd></div>
+                                <div>
+                                    <dt className="text-xs font-bold text-slate-400 uppercase">{t('phone')}</dt>
+                                    <dd className="text-slate-800 flex items-center gap-2 mt-1">
+                                        {isAuthorized ? (
+                                            <span className="font-bold">{selectedCompany.contactPhone}</span>
+                                        ) : (
+                                            <div className="flex items-center gap-2 bg-slate-100 px-3 py-1.5 rounded-lg border border-slate-200">
+                                                <Lock className="w-3 h-3 text-slate-400" />
+                                                <span className="font-mono text-xs text-slate-500">{generateHash(selectedCompany.contactPhone).substring(0, 20)}...</span>
+                                                <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider ml-2">(Protected)</span>
+                                            </div>
+                                        )}
+                                    </dd>
+                                </div>
                             </dl>
                         </div>
                     </div>
@@ -813,9 +1100,20 @@ export default function App() {
                     </div>
                 )}
                 {activeTab === 'VISUALIZER' && (
-                    <div className="flex flex-col items-center justify-center py-12 bg-slate-50 rounded-xl border border-slate-200 border-dashed">
-                        <Network className="w-12 h-12 text-slate-300 mb-4" />
-                        <p className="text-slate-500 font-bold">Ownership Graph Visualization</p>
+                    <div className="flex flex-col items-center justify-center py-12 bg-slate-50 rounded-xl border border-slate-200 border-dashed min-h-[400px]">
+                        {selectedCompany.ownershipGraphUrl ? (
+                            <div className="w-full max-w-2xl mx-auto">
+                                <h4 className="text-center text-sm font-bold text-slate-500 mb-4 uppercase tracking-widest">Corporate Structure Graph</h4>
+                                <img src={selectedCompany.ownershipGraphUrl} alt="Ownership Graph" className="w-full h-auto rounded-lg shadow-lg border border-slate-200" />
+                            </div>
+                        ) : (
+                            <div className="text-center">
+                                <Network className="w-12 h-12 text-slate-300 mb-4 mx-auto" />
+                                <p className="text-slate-500 font-bold">Ownership Graph Visualization</p>
+                                <p className="text-slate-400 text-sm mt-2">No graphical structure data available for this entity.</p>
+                            </div>
+                        )}
+                        
                         <div className="mt-8 flex gap-4">
                             <div className="p-4 bg-white shadow-sm rounded-lg border border-slate-200 text-center"><p className="text-xs text-slate-400 uppercase font-bold">Shareholders</p><p className="text-xl font-bold text-blue-900">{selectedCompany.beneficialOwners.length}</p></div>
                             <div className="p-4 bg-white shadow-sm rounded-lg border border-slate-200 text-center"><p className="text-xs text-slate-400 uppercase font-bold">Subsidiaries</p><p className="text-xl font-bold text-blue-900">{selectedCompany.relationships.filter(r => r.type === 'Subsidiary').length}</p></div>
@@ -829,644 +1127,494 @@ export default function App() {
   };
 
   const renderLogin = () => (
-    <div className="flex items-center justify-center min-h-[calc(100vh-80px)] bg-slate-50 p-4">
-      <div className="bg-white p-8 rounded-2xl shadow-xl w-full max-w-md border border-slate-100">
-        <h2 className="text-2xl font-serif font-bold text-slate-900 mb-6 text-center">{t('login')}</h2>
-        
-        <div className="flex mb-6 bg-slate-100 p-1 rounded-xl">
-          <button onClick={() => { setLoginTab('REGISTRAR'); setLoginStep('CREDENTIALS'); }} className={`flex-1 py-2 text-sm font-bold rounded-lg transition-all ${loginTab === 'REGISTRAR' ? 'bg-white text-blue-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}>Registrar</button>
-          <button onClick={() => { setLoginTab('BUSINESS'); setLoginStep('CREDENTIALS'); }} className={`flex-1 py-2 text-sm font-bold rounded-lg transition-all ${loginTab === 'BUSINESS' ? 'bg-white text-blue-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}>Business</button>
+    <div className="flex items-center justify-center min-h-[calc(100vh-80px)] bg-slate-100">
+      <div className="bg-white p-8 rounded-2xl shadow-xl w-full max-w-md border border-slate-200 relative overflow-hidden">
+        <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-blue-600 to-blue-400"></div>
+        <div className="text-center mb-8">
+            <h2 className="text-2xl font-serif font-bold text-slate-800">Secure Access Portal</h2>
+            <p className="text-slate-500 text-sm mt-2">Identity Verification Required</p>
         </div>
 
-        {loginTab === 'REGISTRAR' ? (
-          <div className="space-y-4 animate-fade-in-up">
-             <div className="p-4 bg-blue-50 rounded-xl border border-blue-100 text-center mb-2">
-                 <ShieldCheck className="w-8 h-8 text-blue-600 mx-auto mb-2" />
-                 <p className="text-xs text-blue-800 font-bold">OFFICIAL GOVERNMENT PORTAL</p>
-                 <p className="text-xs text-blue-600 mt-1">Authorized personnel only.</p>
-             </div>
-             <div>
-                <label className="block text-xs font-bold text-slate-500 uppercase mb-2">Official ID</label>
-                <input type="text" className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="Enter ID" />
-             </div>
-             <div>
-                <label className="block text-xs font-bold text-slate-500 uppercase mb-2">Password</label>
-                <input type="password" className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="••••••••" />
-             </div>
-             <button onClick={() => handleLogin('ADMIN')} className="w-full bg-slate-900 text-white py-3 rounded-xl font-bold hover:bg-slate-800 transition-colors mt-2 shadow-lg">Login as Registrar Admin</button>
-          </div>
-        ) : (
-          <div className="space-y-4 animate-fade-in-up">
-             {loginStep === 'CREDENTIALS' ? (
-                 <>
-                    <div>
-                        <label className="block text-xs font-bold text-slate-500 uppercase mb-2">Registry Code</label>
-                        <input type="text" value={businessIdInput} onChange={(e) => setBusinessIdInput(e.target.value)} className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none font-mono" placeholder="e.g. SL-2023-..." />
-                    </div>
-                    <div>
-                        <label className="block text-xs font-bold text-slate-500 uppercase mb-2">Access Key</label>
-                        <input type="password" className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="••••••••" />
-                    </div>
-                    <div>
-                        <label className="block text-xs font-bold text-slate-500 uppercase mb-2">Registered Phone Number</label>
-                        <input type="tel" value={phoneNumberInput} onChange={(e) => setPhoneNumberInput(e.target.value)} className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="+232..." />
-                    </div>
-                    <button onClick={handleBusinessCredentialCheck} className="w-full bg-blue-900 text-white py-3 rounded-xl font-bold hover:bg-blue-800 transition-colors mt-2 shadow-lg flex items-center justify-center gap-2">
-                        Verify & Send Code <ArrowRight className="w-4 h-4" />
-                    </button>
-                 </>
-             ) : (
-                 <>
-                    {/* Simulated SMS Notification */}
-                    {mockSmsNotification && (
-                        <div className="mb-4 p-3 bg-green-100 border border-green-200 text-green-800 rounded-xl flex items-center gap-3 animate-fade-in-up shadow-sm">
-                            <div className="bg-green-200 p-2 rounded-lg"><Smartphone className="w-5 h-5 text-green-700" /></div>
-                            <div>
-                                <p className="text-xs font-bold uppercase opacity-70">Simulated SMS</p>
-                                <p className="font-bold">{mockSmsNotification}</p>
-                            </div>
-                            <button onClick={() => setMockSmsNotification(null)} className="ml-auto text-green-600 hover:text-green-800"><XCircle className="w-5 h-5" /></button>
-                        </div>
-                    )}
+        <div className="flex bg-slate-100 p-1 rounded-xl mb-8">
+            <button onClick={() => { setLoginTab('REGISTRAR'); setLoginStep('CREDENTIALS'); }} className={`flex-1 py-2 text-sm font-bold rounded-lg transition-all ${loginTab === 'REGISTRAR' ? 'bg-white shadow text-blue-900' : 'text-slate-500 hover:text-slate-700'}`}>Registrar</button>
+            <button onClick={() => { setLoginTab('BUSINESS'); setLoginStep('CREDENTIALS'); }} className={`flex-1 py-2 text-sm font-bold rounded-lg transition-all ${loginTab === 'BUSINESS' ? 'bg-white shadow text-blue-900' : 'text-slate-500 hover:text-slate-700'}`}>Business Entity</button>
+        </div>
 
-                    <div className="p-4 bg-blue-50 rounded-xl border border-blue-100 text-center mb-2">
-                        <Smartphone className="w-8 h-8 text-blue-600 mx-auto mb-2 animate-bounce" />
-                        <p className="text-sm font-bold text-blue-900">2-Factor Authentication</p>
-                        <p className="text-xs text-blue-600 mt-1">Please enter the 4-digit code sent to your registered mobile number.</p>
-                    </div>
-                    <div>
-                        <label className="block text-xs font-bold text-slate-500 uppercase mb-2">Notification Code (OTP)</label>
-                        <input type="text" value={otpInput} onChange={(e) => setOtpInput(e.target.value)} className="w-full px-4 py-3 bg-white border-2 border-blue-200 rounded-xl focus:ring-4 focus:ring-blue-100 focus:outline-none text-center text-2xl font-mono tracking-widest" placeholder="0000" maxLength={4} />
-                    </div>
-                    <button onClick={handleBusinessOtpCheck} className="w-full bg-green-600 text-white py-3 rounded-xl font-bold hover:bg-green-500 transition-colors mt-2 shadow-lg">
-                        Verify & Login
-                    </button>
-                    <button onClick={() => setLoginStep('CREDENTIALS')} className="w-full text-slate-500 text-sm font-bold mt-2 hover:text-slate-700">Back</button>
-                 </>
-             )}
-          </div>
+        {loginTab === 'REGISTRAR' && (
+            <div className="space-y-4 animate-fade-in-up">
+                <div>
+                    <label className="block text-xs font-bold text-slate-500 mb-1 uppercase">Admin ID</label>
+                    <input type="text" value={registrarId} onChange={(e) => setRegistrarId(e.target.value)} className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-sm font-mono" placeholder="ID" />
+                </div>
+                <div>
+                    <label className="block text-xs font-bold text-slate-500 mb-1 uppercase">Password</label>
+                    <input type="password" value={registrarPassword} onChange={(e) => setRegistrarPassword(e.target.value)} className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-sm" placeholder="••••••••" />
+                </div>
+                <button onClick={handleRegistrarLogin} className="w-full bg-blue-900 text-white font-bold py-3 rounded-xl hover:bg-blue-800 transition-colors shadow-lg mt-2">Authenticate</button>
+                <div className="bg-yellow-50 text-yellow-800 p-3 rounded-lg text-xs border border-yellow-200 mt-4">
+                    <strong>Demo Credentials:</strong><br/>ID: 61637582<br/>Password: Sesay_26
+                </div>
+            </div>
+        )}
+
+        {loginTab === 'BUSINESS' && (
+            <div className="space-y-4 animate-fade-in-up">
+                {loginStep === 'CREDENTIALS' ? (
+                    <>
+                        <div>
+                            <label className="block text-xs font-bold text-slate-500 mb-1 uppercase">Registry Code</label>
+                            <input type="text" value={businessIdInput} onChange={(e) => setBusinessIdInput(e.target.value)} className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-sm font-mono" placeholder="e.g. PV 4567" />
+                        </div>
+                        <div>
+                            <label className="block text-xs font-bold text-slate-500 mb-1 uppercase">Registered Phone Number</label>
+                            <input type="tel" value={phoneNumberInput} onChange={(e) => setPhoneNumberInput(e.target.value)} className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-sm" placeholder="+232..." />
+                        </div>
+                        <button onClick={handleBusinessCredentialCheck} className="w-full bg-blue-600 text-white font-bold py-3 rounded-xl hover:bg-blue-700 transition-colors shadow-lg mt-2">Send Access Code</button>
+                    </>
+                ) : (
+                     <>
+                        <div className="text-center mb-4">
+                            <div className="bg-blue-50 text-blue-800 p-3 rounded-lg text-sm mb-4 border border-blue-100">
+                                Enter the 4-digit code sent to your phone ending in ...{phoneNumberInput.slice(-4)}
+                            </div>
+                            <input type="text" value={otpInput} onChange={(e) => setOtpInput(e.target.value)} className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-center text-2xl font-mono tracking-widest" maxLength={4} placeholder="0000" />
+                        </div>
+                        <button onClick={handleBusinessOtpCheck} className="w-full bg-blue-600 text-white font-bold py-3 rounded-xl hover:bg-blue-700 transition-colors shadow-lg">Verify & Login</button>
+                        <button onClick={() => setLoginStep('CREDENTIALS')} className="w-full text-slate-400 text-xs font-bold py-2 hover:text-slate-600">Back to Credentials</button>
+                    </>
+                )}
+            </div>
         )}
       </div>
+      {/* Mock SMS Notification */}
+      {mockSmsNotification && (
+          <div className="fixed top-10 right-10 bg-black/90 text-white p-4 rounded-xl shadow-2xl z-[100] animate-bounce max-w-sm border border-slate-700 flex gap-3">
+              <div className="bg-green-500 h-10 w-10 rounded-full flex items-center justify-center flex-shrink-0"><Smartphone className="w-6 h-6 text-white" /></div>
+              <div>
+                  <p className="font-bold text-sm">New SMS</p>
+                  <p className="text-sm">{mockSmsNotification}</p>
+              </div>
+          </div>
+      )}
     </div>
   );
 
-  const renderGeneratedWebsite = () => {
-    if (!selectedCompany) return null;
-    return (
-        <div className="min-h-screen bg-white">
-            {/* Generated Website Header */}
-            <header className="bg-slate-900 text-white py-4 px-6 fixed top-0 w-full z-50 flex justify-between items-center shadow-md">
-                <div className="font-bold font-serif text-xl tracking-wider">{selectedCompany.name}</div>
-                <button onClick={() => setView('PORTAL_DASHBOARD')} className="text-xs bg-white/10 px-3 py-1 rounded hover:bg-white/20 transition-colors">Exit Website Preview</button>
-            </header>
-
-            {/* Hero */}
-            <section className="pt-32 pb-20 px-6 text-center bg-slate-50">
-                <div className="w-24 h-24 mx-auto bg-blue-100 rounded-full flex items-center justify-center mb-6 text-blue-600">
-                    {selectedCompany.businessLogo ? <img src={selectedCompany.businessLogo} className="w-full h-full object-cover rounded-full" /> : <Building2 className="w-12 h-12" />}
-                </div>
-                <h1 className="text-4xl md:text-5xl font-serif font-bold text-slate-900 mb-4">{selectedCompany.name}</h1>
-                <p className="text-lg text-slate-500 max-w-2xl mx-auto">Registered in Sierra Leone ({selectedCompany.registryCode}). Committed to transparency and excellence.</p>
-            </section>
-
-            {/* About / Registry Info */}
-            <section className="py-16 px-6 max-w-4xl mx-auto">
-                <div className="grid md:grid-cols-2 gap-12">
-                    <div>
-                        <h2 className="text-2xl font-serif font-bold text-slate-900 mb-4">About Us</h2>
-                        <p className="text-slate-600 leading-relaxed">
-                            We are a {selectedCompany.legalForm} operating out of {selectedCompany.address}. 
-                            Our company was officially registered on {formatDate(selectedCompany.registrationDate)}.
-                            We pride ourselves on maintaining full compliance with the Sierra Leone Business Registry.
-                        </p>
-                    </div>
-                    <div className="bg-slate-50 p-8 rounded-2xl border border-slate-100">
-                        <h3 className="font-bold text-slate-900 mb-4">Official Details</h3>
-                        <ul className="space-y-3 text-sm">
-                             <li className="flex justify-between border-b border-slate-200 pb-2"><span>Type</span> <span className="font-bold">{selectedCompany.legalForm}</span></li>
-                             <li className="flex justify-between border-b border-slate-200 pb-2"><span>Status</span> <span className="font-bold text-green-600">{selectedCompany.status}</span></li>
-                             <li className="flex justify-between border-b border-slate-200 pb-2"><span>Contact</span> <span className="font-bold">{selectedCompany.contactPhone}</span></li>
-                             <li className="flex justify-between"><span>Email</span> <span className="font-bold text-blue-600">{selectedCompany.contactEmail}</span></li>
-                        </ul>
-                    </div>
-                </div>
-            </section>
-
-            {/* Financial Transparency (Public Data) */}
-            <section className="py-16 px-6 bg-blue-900 text-white">
-                 <div className="max-w-4xl mx-auto text-center">
-                     <h2 className="text-2xl font-serif font-bold mb-8">Financial Transparency</h2>
-                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                         <div className="bg-white/10 p-6 rounded-xl backdrop-blur-sm">
-                             <div className="text-3xl font-bold mb-1">{tCurrency(selectedCompany.reports[0]?.revenue || 0)}</div>
-                             <div className="text-sm opacity-70">Annual Revenue (Last Filed)</div>
-                         </div>
-                         <div className="bg-white/10 p-6 rounded-xl backdrop-blur-sm">
-                             <div className="text-3xl font-bold mb-1">{selectedCompany.reports[0]?.year || 'N/A'}</div>
-                             <div className="text-sm opacity-70">Fiscal Year Verified</div>
-                         </div>
-                         <div className="bg-white/10 p-6 rounded-xl backdrop-blur-sm">
-                             <div className="text-3xl font-bold mb-1">{selectedCompany.capital > 0 ? tCurrency(selectedCompany.capital) : 'N/A'}</div>
-                             <div className="text-sm opacity-70">Registered Capital</div>
-                         </div>
-                     </div>
-                     <p className="mt-8 text-sm opacity-60">Data verified by the SL Business Registry Blockchain.</p>
-                 </div>
-            </section>
-
-            <footer className="py-8 text-center text-slate-400 text-sm bg-slate-950">
-                <p>&copy; {new Date().getFullYear()} {selectedCompany.name}. All rights reserved.</p>
-            </footer>
-        </div>
-    );
-  };
-
   const renderAdminDashboard = () => (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-      <h1 className="text-3xl font-serif font-bold text-slate-900 mb-8">Registrar Dashboard</h1>
-      
-      {/* Registration Form */}
-      <div className="bg-slate-900 text-white rounded-2xl shadow-lg p-8 mb-10 border border-slate-800 relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-64 h-64 bg-blue-600/10 rounded-full blur-3xl -mr-16 -mt-16 pointer-events-none"></div>
-        <div className="flex items-center gap-3 mb-6 relative z-10">
-          <div className="p-2 bg-green-500/20 rounded-lg border border-green-500/30"><Plus className="w-6 h-6 text-green-400" /></div>
-          <h3 className="font-bold text-xl">Register New Legal Entity</h3>
-        </div>
-        <form onSubmit={(e) => {
-          e.preventDefault();
-          const formData = new FormData(e.currentTarget);
-          handleRegistrarAddEntry(
-              formData.get('name') as string,
-              formData.get('form') as LegalForm,
-              formData.get('code') as string
-          );
-          (e.target as HTMLFormElement).reset();
-        }} className="grid grid-cols-1 md:grid-cols-4 gap-4 relative z-10">
-            <input name="name" placeholder="Entity Name" className="bg-slate-800 border border-slate-700 text-white px-4 py-3 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none placeholder-slate-500" required />
-            <select name="form" className="bg-slate-800 border border-slate-700 text-white px-4 py-3 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none">
-                {Object.values(LegalForm).map(f => <option key={f} value={f}>{f}</option>)}
-            </select>
-            <input name="code" placeholder="Registry Code (e.g. SL-2024-...)" className="bg-slate-800 border border-slate-700 text-white px-4 py-3 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none placeholder-slate-500" required />
-            <button type="submit" className="bg-green-600 hover:bg-green-500 text-white font-bold py-3 px-6 rounded-xl transition flex items-center justify-center gap-2 shadow-lg shadow-green-900/20">
-              <Plus className="w-4 h-4" /> Add to Registry
-            </button>
-        </form>
-      </div>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 min-h-[calc(100vh-80px)]">
+          <div className="flex justify-between items-center mb-8">
+              <h2 className="text-3xl font-serif font-bold text-slate-800">Registrar Dashboard</h2>
+              <button onClick={() => { setEditingCompanyId(NEW_COMPANY_ID); setView('PORTAL_EDIT_DETAILS'); }} className="bg-blue-900 text-white px-6 py-3 rounded-xl font-bold shadow-lg hover:bg-blue-800 flex items-center gap-2"><Plus className="w-5 h-5" /> Register New Entity</button>
+          </div>
 
-       {/* Status Management */}
-       <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden mb-10">
-           <div className="p-6 border-b border-slate-100 bg-slate-50 flex items-center justify-between">
-              <h3 className="font-bold text-slate-800 flex items-center gap-2"><Settings className="w-5 h-5 text-slate-500" /> Registry Status Management</h3>
-           </div>
-           <div className="max-h-96 overflow-y-auto">
-               <table className="w-full text-sm text-left">
-                   <thead className="bg-slate-50 text-slate-500 font-bold uppercase">
-                       <tr>
-                           <th className="px-6 py-3">Company</th>
-                           <th className="px-6 py-3">Registry Code</th>
-                           <th className="px-6 py-3">Current Status</th>
-                           <th className="px-6 py-3">Action</th>
-                       </tr>
-                   </thead>
-                   <tbody className="divide-y divide-slate-100">
-                       {companies.map(c => (
-                           <tr key={c.id} className="hover:bg-slate-50">
-                               <td className="px-6 py-4 font-bold text-slate-900">{c.name}</td>
-                               <td className="px-6 py-4 font-mono text-slate-500">{c.registryCode}</td>
-                               <td className="px-6 py-4">
-                                   <span className={`px-2 py-1 rounded-full text-xs font-bold ${c.status === 'Active' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>{c.status}</span>
-                               </td>
-                               <td className="px-6 py-4">
-                                   <select 
-                                       className="bg-white border border-slate-300 rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500 text-xs font-bold text-slate-700"
-                                       value={c.status}
-                                       onChange={(e) => handleStatusChange(c.id, e.target.value)}
-                                   >
-                                       <option value="Active">Active</option>
-                                       <option value="Inactive">Inactive</option>
-                                       <option value="Liquidated">Liquidated</option>
-                                       <option value="Bankruptcy">Bankruptcy</option>
-                                   </select>
-                               </td>
-                           </tr>
-                       ))}
-                   </tbody>
-               </table>
-           </div>
-       </div>
+          {/* Pending Reports Section */}
+          <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden mb-8">
+              <div className="bg-orange-50 border-b border-orange-100 p-6 flex items-center gap-3">
+                  <Clock className="w-6 h-6 text-orange-600" />
+                  <h3 className="font-bold text-orange-900">Pending Annual Reports</h3>
+              </div>
+              <div className="p-0">
+                  {companies.flatMap(c => c.reports.filter(r => r.status === ReportStatus.SUBMITTED).map(r => ({ ...r, companyName: c.name, companyId: c.id }))).length === 0 ? (
+                      <div className="p-8 text-center text-slate-400 italic">No pending reports to review.</div>
+                  ) : (
+                      <table className="w-full text-sm text-left">
+                          <thead className="bg-slate-50 text-slate-500 font-bold uppercase text-xs">
+                              <tr>
+                                  <th className="px-6 py-3">Company</th>
+                                  <th className="px-6 py-3">Year</th>
+                                  <th className="px-6 py-3">Revenue Reported</th>
+                                  <th className="px-6 py-3">Tx Volume</th>
+                                  <th className="px-6 py-3">Actions</th>
+                              </tr>
+                          </thead>
+                          <tbody className="divide-y divide-slate-100">
+                              {companies.flatMap(c => c.reports.filter(r => r.status === ReportStatus.SUBMITTED).map(r => ({ ...r, companyName: c.name, companyId: c.id }))).map((item, idx) => (
+                                  <tr key={idx} className="hover:bg-slate-50">
+                                      <td className="px-6 py-4 font-bold text-slate-900">{item.companyName}</td>
+                                      <td className="px-6 py-4">{item.year}</td>
+                                      <td className="px-6 py-4 font-mono">{tCurrency(item.revenue || 0)}</td>
+                                      <td className="px-6 py-4 font-mono">{item.transactionVolume}</td>
+                                      <td className="px-6 py-4 flex gap-2">
+                                          <button onClick={() => handleAdminReviewReport(item.companyId, item.year, true)} className="bg-green-100 text-green-700 px-3 py-1.5 rounded-lg font-bold hover:bg-green-200 border border-green-200">Approve</button>
+                                          <button onClick={() => handleAdminReviewReport(item.companyId, item.year, false)} className="bg-red-100 text-red-700 px-3 py-1.5 rounded-lg font-bold hover:bg-red-200 border border-red-200">Reject</button>
+                                      </td>
+                                  </tr>
+                              ))}
+                          </tbody>
+                      </table>
+                  )}
+              </div>
+          </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
-        <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-           <div className="text-slate-500 text-sm font-bold uppercase mb-2">Pending Reports</div>
-           <div className="text-4xl font-serif font-bold text-blue-600">{companies.reduce((acc, c) => acc + c.reports.filter(r => r.status === ReportStatus.SUBMITTED).length, 0)}</div>
-        </div>
-        <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-           <div className="text-slate-500 text-sm font-bold uppercase mb-2">Total Entities</div>
-           <div className="text-4xl font-serif font-bold text-slate-900">{companies.length}</div>
-        </div>
-        <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-           <div className="text-slate-500 text-sm font-bold uppercase mb-2">Flagged for Review</div>
-           <div className="text-4xl font-serif font-bold text-red-500">{companies.filter(c => c.taxDebt > 0).length}</div>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-           <div className="p-6 border-b border-slate-100 bg-slate-50">
-              <h3 className="font-bold text-slate-800">Filings Requiring Approval</h3>
-           </div>
-           <div className="divide-y divide-slate-100">
-              {companies.flatMap(c => c.reports.filter(r => r.status === ReportStatus.SUBMITTED).map(r => ({ company: c, report: r }))).map((item, idx) => (
-                  <div key={idx} className="p-6 flex items-center justify-between">
-                      <div>
-                          <div className="font-bold text-slate-900">{item.company.name}</div>
-                          <div className="text-sm text-slate-500">Annual Report {item.report.year} • Rev: {tCurrency(item.report.revenue || 0)}</div>
+          {/* Company Management */}
+          <div className="grid grid-cols-1 gap-4">
+              {companies.map(c => (
+                  <div key={c.id} className="bg-white p-6 rounded-xl border border-slate-200 flex flex-col md:flex-row items-center justify-between gap-4 group hover:shadow-md transition-all">
+                      <div className="flex items-center gap-4">
+                           <div className="h-12 w-12 rounded-lg bg-slate-100 flex items-center justify-center text-slate-400 font-bold text-lg">{c.name.charAt(0)}</div>
+                           <div>
+                               <h4 className="font-bold text-slate-900">{c.name}</h4>
+                               <p className="text-xs text-slate-500 font-mono">{c.registryCode} • {c.legalForm}</p>
+                           </div>
                       </div>
-                      <div className="flex gap-3">
-                          <button onClick={() => handleAdminReviewReport(item.company.id, item.report.year, true)} className="px-4 py-2 bg-green-100 text-green-700 rounded-lg text-sm font-bold hover:bg-green-200">Approve</button>
-                          <button onClick={() => handleAdminReviewReport(item.company.id, item.report.year, false)} className="px-4 py-2 bg-red-100 text-red-700 rounded-lg text-sm font-bold hover:bg-red-200">Reject</button>
+                      <div className="flex items-center gap-3">
+                          <select 
+                            value={c.status}
+                            onChange={(e) => handleStatusChange(c.id, e.target.value)}
+                            className={`px-3 py-2 rounded-lg text-xs font-bold border outline-none cursor-pointer ${c.status === 'Active' ? 'bg-green-50 text-green-800 border-green-200' : 'bg-red-50 text-red-800 border-red-200'}`}
+                          >
+                              <option value="Active">Active</option>
+                              <option value="Inactive">Inactive</option>
+                              <option value="Liquidated">Liquidated</option>
+                              <option value="Bankruptcy">Bankruptcy</option>
+                          </select>
+                          <button onClick={() => { setEditingCompanyId(c.id); setView('PORTAL_EDIT_DETAILS'); }} className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"><Edit className="w-5 h-5" /></button>
                       </div>
                   </div>
               ))}
-              {companies.every(c => !c.reports.some(r => r.status === ReportStatus.SUBMITTED)) && (
-                  <div className="p-12 text-center text-slate-500">No pending reports to review.</div>
-              )}
-           </div>
-        </div>
-
-        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-            <div className="p-6 border-b border-slate-100 bg-slate-50 flex items-center justify-between">
-                <h3 className="font-bold text-slate-800">Global Registry Activity Log</h3>
-                <span className="text-xs font-bold text-blue-600 bg-blue-50 px-2 py-1 rounded">Live Feed</span>
-            </div>
-            <div className="divide-y divide-slate-100 max-h-[400px] overflow-y-auto">
-                {companies
-                  .flatMap(c => c.history.map(h => ({...h, companyName: c.name})))
-                  .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
-                  .slice(0, 10)
-                  .map((activity, idx) => (
-                    <div key={idx} className="p-4 hover:bg-slate-50 transition-colors">
-                        <div className="flex justify-between items-start mb-1">
-                            <span className="font-bold text-sm text-slate-800">{activity.companyName}</span>
-                            <span className="text-xs text-slate-400 font-mono">{formatDate(activity.timestamp)}</span>
-                        </div>
-                        <p className="text-sm text-slate-600">{activity.details}</p>
-                        <div className="flex justify-between items-center mt-2">
-                             <span className="text-[10px] uppercase font-bold text-slate-400 bg-slate-100 px-1.5 py-0.5 rounded">{activity.action}</span>
-                             <span className="text-[10px] font-mono text-blue-400 truncate max-w-[150px]">{activity.hash}</span>
-                        </div>
-                    </div>
-                ))}
-            </div>
-        </div>
+          </div>
       </div>
-    </div>
   );
 
   const renderPortalDashboard = () => {
-    const managedCompany = currentUser?.role === 'BUSINESS' 
-        ? companies.find(c => c.id === currentUser.companyId) 
-        : companies[0];
+    const company = companies.find(c => c.id === currentUser?.companyId);
+    if (!company) return <div>Error: Company not found</div>;
 
-    if (!managedCompany) return <div className="p-10 text-center">No company associated.</div>;
+    const currentYear = new Date().getFullYear();
+    const lastReport = company.reports.find(r => r.year === currentYear - 1);
+    const isReportPending = !lastReport || lastReport.status === ReportStatus.MISSING;
 
     return (
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-            <div className="flex justify-between items-center mb-8">
-                <div>
-                    <h1 className="text-3xl font-serif font-bold text-slate-900">My Portal</h1>
-                    <p className="text-slate-500 mt-1">Managing: <span className="font-bold text-blue-900">{managedCompany.name}</span></p>
-                </div>
-                <button onClick={() => { setEditingCompanyId(managedCompany.id); setView('PORTAL_EDIT_DETAILS'); }} className="flex items-center gap-2 px-5 py-2.5 bg-white border border-slate-200 rounded-xl shadow-sm font-bold text-slate-700 hover:bg-slate-50">
-                    <Edit className="w-4 h-4" /> Edit Profile
-                </button>
+            <div className="mb-8">
+                <h1 className="text-3xl font-serif font-bold text-slate-900">Welcome, {company.name}</h1>
+                <p className="text-slate-500">Manage your business profile, filings, and compliance.</p>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                {/* Status Card */}
-                <div className="bg-gradient-to-br from-blue-900 to-blue-800 rounded-2xl p-6 text-white shadow-xl h-fit">
-                    <div className="flex items-center gap-3 mb-6">
-                        <div className="p-2 bg-white/10 rounded-lg"><Activity className="w-6 h-6" /></div>
-                        <h3 className="font-bold">Compliance Status</h3>
-                    </div>
-                    <div className="space-y-4">
-                        <div className="flex justify-between items-center bg-white/10 p-3 rounded-xl">
-                            <span className="text-blue-100 text-sm">Registry Status</span>
-                            <span className="font-bold bg-green-400/20 text-green-300 px-2 py-0.5 rounded text-sm">{managedCompany.status}</span>
-                        </div>
-                        <div className="flex justify-between items-center bg-white/10 p-3 rounded-xl">
-                            <span className="text-blue-100 text-sm">Last Filing</span>
-                            <span className="font-bold">{managedCompany.reports[0]?.year || 'N/A'}</span>
-                        </div>
-                         <div className="flex justify-between items-center bg-white/10 p-3 rounded-xl">
-                            <span className="text-blue-100 text-sm">Tax Standing</span>
-                            <span className={`font-bold ${managedCompany.taxDebt > 0 ? 'text-red-300' : 'text-green-300'}`}>{managedCompany.taxDebt > 0 ? 'Outstanding' : 'Clear'}</span>
-                        </div>
-                    </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-10">
+                <div className="bg-blue-900 text-white p-6 rounded-2xl shadow-xl relative overflow-hidden">
+                    <div className="absolute top-0 right-0 p-4 opacity-10"><ShieldCheck className="w-24 h-24" /></div>
+                    <p className="text-blue-200 text-sm font-bold uppercase tracking-wider mb-2">Compliance Status</p>
+                    <h2 className="text-3xl font-bold mb-1">{company.status}</h2>
+                    <p className="text-sm opacity-80">{company.taxDebt === 0 ? 'Good Standing' : 'Action Required'}</p>
+                </div>
+                
+                <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 relative group cursor-pointer hover:border-blue-300 transition-all" onClick={() => { setEditingCompanyId(company.id); setView('PORTAL_EDIT_DETAILS'); }}>
+                    <div className="absolute top-4 right-4 bg-slate-100 p-2 rounded-lg text-slate-400 group-hover:bg-blue-50 group-hover:text-blue-600 transition-colors"><Settings className="w-5 h-5" /></div>
+                    <p className="text-slate-400 text-xs font-bold uppercase tracking-wider mb-3">Profile Management</p>
+                    <h3 className="text-lg font-bold text-slate-800 mb-1">Edit Business Details</h3>
+                    <p className="text-sm text-slate-500">Update contacts, address, site.</p>
                 </div>
 
-                {/* Main Content Area */}
-                <div className="lg:col-span-2 space-y-6">
-                     
-                     {/* Website Builder Teaser */}
-                     <div className="bg-purple-50 rounded-2xl border border-purple-100 p-6 flex items-center justify-between">
-                         <div className="flex items-center gap-4">
-                             <div className="bg-purple-100 p-3 rounded-xl text-purple-700"><Layout className="w-6 h-6" /></div>
-                             <div>
-                                 <h3 className="font-bold text-purple-900">Public Business Website</h3>
-                                 <p className="text-sm text-purple-700/70">{managedCompany.isWebsitePublished ? 'Your website is live and synced with registry data.' : 'Create a free landing page based on your report entries.'}</p>
-                             </div>
-                         </div>
-                         <button onClick={() => { setSelectedCompanyId(managedCompany.id); setView('GENERATED_WEBSITE'); }} className="px-5 py-2.5 bg-purple-600 text-white font-bold rounded-xl shadow hover:bg-purple-700 transition-colors">
-                             {managedCompany.isWebsitePublished ? 'View Live Site' : 'Preview & Build'}
-                         </button>
+                <div className={`p-6 rounded-2xl shadow-sm border relative cursor-pointer transition-all ${isReportPending ? 'bg-orange-50 border-orange-200 hover:border-orange-300' : 'bg-green-50 border-green-200'}`} onClick={() => isReportPending && setView('PORTAL_FILE_REPORT')}>
+                     <div className={`absolute top-4 right-4 p-2 rounded-lg ${isReportPending ? 'bg-orange-100 text-orange-600' : 'bg-green-100 text-green-600'}`}>
+                         {isReportPending ? <AlertTriangle className="w-5 h-5" /> : <CheckCircle className="w-5 h-5" />}
                      </div>
-
-                     <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
-                        <h3 className="font-bold text-lg text-slate-900 mb-4">Quick Actions</h3>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <button onClick={() => { setReportingCompanyId(managedCompany.id); setView('PORTAL_FILE_REPORT'); }} className="flex items-center gap-4 p-4 rounded-xl border border-blue-100 bg-blue-50 text-blue-900 hover:bg-blue-100 transition-colors text-left group">
-                                <div className="bg-white p-2 rounded-lg text-blue-600 shadow-sm group-hover:scale-110 transition-transform"><FileText className="w-6 h-6" /></div>
-                                <div>
-                                    <div className="font-bold">File Annual Report</div>
-                                    <div className="text-xs text-blue-700/70">Submit financial data for 2024</div>
-                                </div>
-                            </button>
-                             <button className="flex items-center gap-4 p-4 rounded-xl border border-slate-200 bg-slate-50 text-slate-900 hover:bg-slate-100 transition-colors text-left group">
-                                <div className="bg-white p-2 rounded-lg text-slate-600 shadow-sm group-hover:scale-110 transition-transform"><FileSpreadsheet className="w-6 h-6" /></div>
-                                <div>
-                                    <div className="font-bold">Download Certificate</div>
-                                    <div className="text-xs text-slate-500">Get official registry proof</div>
-                                </div>
-                            </button>
-                        </div>
-                     </div>
-
-                     {/* Transaction Ledger */}
-                     <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
-                         <div className="px-6 py-4 border-b border-slate-100 flex justify-between items-center">
-                             <h3 className="font-bold text-slate-800">Business Transaction Ledger</h3>
-                             <button onClick={() => {
-                                 const desc = prompt("Transaction Description:");
-                                 const amt = prompt("Amount:");
-                                 const type = confirm("Is this income (OK for Yes) or expense (Cancel)?") ? 'CREDIT' : 'DEBIT';
-                                 if (desc && amt) handleAddTransaction(managedCompany.id, desc, Number(amt), type);
-                             }} className="text-xs bg-slate-900 text-white px-3 py-1.5 rounded-lg font-bold hover:bg-slate-800">+ Add Entry</button>
-                         </div>
-                         <div className="max-h-60 overflow-y-auto">
-                            {managedCompany.transactions.length === 0 ? (
-                                <div className="p-8 text-center text-slate-400 text-sm">No transactions recorded yet.</div>
-                            ) : (
-                                <table className="w-full text-sm">
-                                    <thead className="bg-slate-50 text-slate-500 font-bold">
-                                        <tr>
-                                            <th className="px-6 py-3 text-left">Date</th>
-                                            <th className="px-6 py-3 text-left">Description</th>
-                                            <th className="px-6 py-3 text-right">Amount</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody className="divide-y divide-slate-100">
-                                        {managedCompany.transactions.map(tx => (
-                                            <tr key={tx.id}>
-                                                <td className="px-6 py-3 text-slate-500 font-mono">{tx.date}</td>
-                                                <td className="px-6 py-3 text-slate-800 flex items-center gap-2">
-                                                    {tx.type === 'CREDIT' ? <TrendingUp className="w-4 h-4 text-green-500" /> : <TrendingDown className="w-4 h-4 text-red-500" />}
-                                                    {tx.description}
-                                                </td>
-                                                <td className={`px-6 py-3 text-right font-bold ${tx.type === 'CREDIT' ? 'text-green-600' : 'text-slate-600'}`}>
-                                                    {tx.type === 'CREDIT' ? '+' : '-'}{tCurrency(tx.amount)}
-                                                </td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
-                            )}
-                         </div>
-                     </div>
-
-                     <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
-                        <div className="px-6 py-4 border-b border-slate-100 font-bold text-slate-800">Filing History</div>
-                         <div className="divide-y divide-slate-100">
-                             {managedCompany.reports.map(r => (
-                                 <div key={r.year} className="px-6 py-4 flex justify-between items-center">
-                                     <div>
-                                         <div className="font-bold text-slate-900">Annual Report {r.year}</div>
-                                         <div className="text-xs text-slate-500">Filed on {r.submissionDate || 'Pending'}</div>
-                                     </div>
-                                     <span className={`px-2.5 py-1 rounded-full text-xs font-bold ${r.status === ReportStatus.APPROVED ? 'bg-green-100 text-green-700' : r.status === ReportStatus.SUBMITTED ? 'bg-yellow-100 text-yellow-700' : 'bg-slate-100 text-slate-600'}`}>{r.status}</span>
-                                 </div>
-                             ))}
-                         </div>
-                     </div>
+                     <p className={`${isReportPending ? 'text-orange-800' : 'text-green-800'} text-xs font-bold uppercase tracking-wider mb-3`}>Annual Filing</p>
+                     <h3 className={`text-lg font-bold ${isReportPending ? 'text-orange-900' : 'text-green-900'} mb-1`}>{isReportPending ? `File ${currentYear - 1} Report` : 'Up to Date'}</h3>
+                     <p className={`text-sm ${isReportPending ? 'text-orange-700' : 'text-green-700'}`}>{isReportPending ? 'Due immediately.' : 'No actions needed.'}</p>
                 </div>
             </div>
+
+            {/* Transaction Simulator for Demo */}
+            <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-8 mb-8">
+                <h3 className="text-lg font-bold text-slate-900 mb-6 flex items-center gap-2"><Activity className="w-5 h-5 text-blue-600" /> Transaction Ledger Simulator</h3>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                    <input id="txDesc" type="text" placeholder="Description (e.g. Sales Inv #102)" className="px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm" />
+                    <input id="txAmount" type="number" placeholder="Amount (SLE)" className="px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm" />
+                    <button 
+                        onClick={() => {
+                            const desc = (document.getElementById('txDesc') as HTMLInputElement).value;
+                            const amt = Number((document.getElementById('txAmount') as HTMLInputElement).value);
+                            if (desc && amt) {
+                                handleAddTransaction(company.id, desc, amt, 'CREDIT');
+                                (document.getElementById('txDesc') as HTMLInputElement).value = '';
+                                (document.getElementById('txAmount') as HTMLInputElement).value = '';
+                            }
+                        }}
+                        className="bg-slate-900 text-white font-bold rounded-xl hover:bg-slate-800 transition-colors"
+                    >
+                        Record Transaction
+                    </button>
+                </div>
+                <div className="border rounded-xl overflow-hidden">
+                    <table className="w-full text-sm">
+                        <thead className="bg-slate-50 text-slate-500 font-bold uppercase text-xs">
+                            <tr>
+                                <th className="px-4 py-3 text-left">Date</th>
+                                <th className="px-4 py-3 text-left">Description</th>
+                                <th className="px-4 py-3 text-right">Amount</th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-100">
+                             {company.transactions.length === 0 ? (
+                                 <tr><td colSpan={3} className="p-4 text-center text-slate-400 italic">No transactions recorded yet.</td></tr>
+                             ) : (
+                                 company.transactions.map((tx) => (
+                                     <tr key={tx.id}>
+                                         <td className="px-4 py-3 text-slate-500 font-mono text-xs">{tx.date}</td>
+                                         <td className="px-4 py-3 font-medium text-slate-800">{tx.description}</td>
+                                         <td className={`px-4 py-3 text-right font-mono font-bold ${tx.type === 'CREDIT' ? 'text-green-600' : 'text-red-600'}`}>
+                                             {tx.type === 'CREDIT' ? '+' : '-'}{tCurrency(tx.amount)}
+                                         </td>
+                                     </tr>
+                                 ))
+                             )}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            {company.isWebsitePublished && (
+                <div className="bg-purple-50 border border-purple-100 rounded-2xl p-6 flex items-center justify-between">
+                    <div>
+                        <h3 className="text-purple-900 font-bold text-lg flex items-center gap-2"><Globe className="w-5 h-5" /> Live Business Site</h3>
+                        <p className="text-purple-700 text-sm mt-1">Your auto-generated business website is active.</p>
+                    </div>
+                    <button onClick={() => { setSelectedCompanyId(company.id); setView('GENERATED_WEBSITE'); }} className="bg-purple-600 text-white px-6 py-2 rounded-xl font-bold hover:bg-purple-700 shadow-md">View Site</button>
+                </div>
+            )}
         </div>
     );
   };
 
   const renderNameCheckView = () => (
-    <div className="min-h-[calc(100vh-80px)] bg-slate-50 flex flex-col items-center justify-center p-4">
-        <div className="bg-white p-8 rounded-2xl shadow-xl w-full max-w-lg border border-slate-100 text-center">
-            <div className="inline-flex p-4 rounded-full bg-blue-50 text-blue-600 mb-6">
-                <Search className="w-8 h-8" />
-            </div>
-            <h2 className="text-2xl font-serif font-bold text-slate-900 mb-2">Check Name Availability</h2>
-            <p className="text-slate-500 mb-8">Ensure your business name is unique before registration.</p>
-            
-            <div className="relative mb-6">
-                <input 
+      <div className="min-h-[calc(100vh-80px)] bg-slate-50 flex items-center justify-center p-4">
+          <div className="bg-white p-10 rounded-3xl shadow-2xl max-w-2xl w-full border border-slate-100 text-center">
+              <div className="w-20 h-20 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-6">
+                  <Search className="w-10 h-10 text-blue-600" />
+              </div>
+              <h2 className="text-3xl font-serif font-bold text-slate-900 mb-2">Name Availability Check</h2>
+              <p className="text-slate-500 mb-8">Ensure your proposed business name is unique before registration.</p>
+              
+              <div className="relative max-w-lg mx-auto mb-8">
+                  <input 
                     type="text" 
                     value={nameCheckValue}
-                    onChange={(e) => { setNameCheckValue(e.target.value); setNameAvailability('IDLE'); }}
-                    className="w-full px-5 py-4 text-lg bg-slate-50 border-2 border-slate-200 rounded-xl focus:ring-4 focus:ring-blue-100 focus:border-blue-500 focus:outline-none transition-all text-center font-bold text-slate-800 placeholder:text-slate-300 placeholder:font-normal"
-                    placeholder="Enter desired name..." 
-                />
-            </div>
-            
-            <button 
-                onClick={() => checkNameAvailability(nameCheckValue)}
-                disabled={!nameCheckValue.trim() || nameAvailability === 'CHECKING'}
-                className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl transition-all shadow-lg shadow-blue-200 mb-6 disabled:opacity-50"
-            >
-                {nameAvailability === 'CHECKING' ? 'Checking Database...' : 'Check Availability'}
-            </button>
+                    onChange={(e) => { setNameCheckValue(e.target.value); checkNameAvailability(e.target.value); }}
+                    placeholder="Enter proposed name..." 
+                    className="w-full pl-6 pr-14 py-4 bg-slate-50 border-2 border-slate-200 rounded-2xl focus:border-blue-500 focus:outline-none text-lg font-bold text-slate-800 transition-colors"
+                  />
+                  <div className="absolute right-4 top-4">
+                      {nameAvailability === 'CHECKING' && <Loader2 className="w-6 h-6 text-blue-500 animate-spin" />}
+                      {nameAvailability === 'AVAILABLE' && <CheckCircle className="w-6 h-6 text-green-500" />}
+                      {nameAvailability === 'TAKEN' && <XCircle className="w-6 h-6 text-red-500" />}
+                  </div>
+              </div>
 
-            {nameAvailability === 'AVAILABLE' && (
-                <div className="p-4 bg-green-50 border border-green-200 rounded-xl text-green-800 animate-fade-in-up">
-                    <CheckCircle className="w-6 h-6 mx-auto mb-2 text-green-600" />
-                    <p className="font-bold">"{nameCheckValue}" is available!</p>
-                    <p className="text-xs mt-1 opacity-80">You can proceed with registration.</p>
-                </div>
-            )}
-            
-            {nameAvailability === 'TAKEN' && (
-                <div className="p-4 bg-red-50 border border-red-200 rounded-xl text-red-800 animate-fade-in-up">
-                    <XCircle className="w-6 h-6 mx-auto mb-2 text-red-600" />
-                    <p className="font-bold">"{nameCheckValue}" is already taken.</p>
-                    <p className="text-xs mt-1 opacity-80">Please try a different variation.</p>
-                </div>
-            )}
-        </div>
-    </div>
+              {nameAvailability === 'AVAILABLE' && (
+                  <div className="bg-green-50 text-green-800 p-4 rounded-xl border border-green-200 animate-fade-in-up">
+                      <p className="font-bold text-lg">"{nameCheckValue}" is available!</p>
+                      <p className="text-sm opacity-80 mt-1">You can proceed to register this name.</p>
+                  </div>
+              )}
+              
+              {nameAvailability === 'TAKEN' && (
+                  <div className="bg-red-50 text-red-800 p-4 rounded-xl border border-red-200 animate-fade-in-up">
+                      <p className="font-bold text-lg">"{nameCheckValue}" is already taken.</p>
+                      <p className="text-sm opacity-80 mt-1">Please try a variation or a different name.</p>
+                  </div>
+              )}
+
+              <button onClick={() => setView('SEARCH')} className="mt-8 text-slate-400 hover:text-slate-600 text-sm font-bold">Back to Directory</button>
+          </div>
+      </div>
   );
 
   const renderOpenData = () => (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-        <h1 className="text-3xl font-serif font-bold text-slate-900 mb-8">Open Data Portal</h1>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 hover:border-blue-300 transition-colors">
-                <div className="bg-blue-50 w-12 h-12 rounded-xl flex items-center justify-center text-blue-600 mb-4"><Database className="w-6 h-6" /></div>
-                <h3 className="text-xl font-bold text-slate-900 mb-2">Registered Companies Dataset</h3>
-                <p className="text-slate-500 mb-6 text-sm">Full list of active and inactive companies, including registration dates and legal forms. Updated daily.</p>
-                <div className="flex flex-wrap gap-3">
-                    <button onClick={() => downloadData('CSV')} className="px-4 py-2 bg-slate-100 text-slate-700 font-bold rounded-lg text-sm hover:bg-slate-200">Download CSV</button>
-                    <button onClick={() => downloadData('JSON')} className="px-4 py-2 bg-slate-100 text-slate-700 font-bold rounded-lg text-sm hover:bg-slate-200">Download JSON</button>
-                    <button onClick={() => downloadData('XML')} className="px-4 py-2 bg-slate-100 text-slate-700 font-bold rounded-lg text-sm hover:bg-slate-200">Download XML</button>
-                    <button onClick={() => downloadData('XLSX')} className="px-4 py-2 bg-slate-100 text-slate-700 font-bold rounded-lg text-sm hover:bg-slate-200">Download Excel</button>
-                </div>
-            </div>
-            <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 hover:border-blue-300 transition-colors">
-                <div className="bg-purple-50 w-12 h-12 rounded-xl flex items-center justify-center text-purple-600 mb-4"><FileCode className="w-6 h-6" /></div>
-                <h3 className="text-xl font-bold text-slate-900 mb-2">Annual Reports Schema</h3>
-                <p className="text-slate-500 mb-6 text-sm">Structure and metadata definitions for the annual reporting standard used by the registry.</p>
-                <button className="px-4 py-2 bg-slate-100 text-slate-700 font-bold rounded-lg text-sm hover:bg-slate-200">View Schema</button>
-            </div>
-        </div>
-    </div>
+      <div className="max-w-5xl mx-auto px-4 py-16">
+          <div className="text-center mb-12">
+              <h2 className="text-4xl font-serif font-bold text-slate-900 mb-4">Open Data Portal</h2>
+              <p className="text-lg text-slate-500 max-w-2xl mx-auto">Access machine-readable data for research, analysis, and transparency. Updated daily via blockchain sync.</p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+               <div className="bg-white p-8 rounded-2xl shadow-lg border border-slate-100 hover:border-blue-300 transition-all group">
+                   <div className="w-14 h-14 bg-blue-50 rounded-xl flex items-center justify-center text-blue-600 mb-6 group-hover:scale-110 transition-transform"><FileSpreadsheet className="w-7 h-7" /></div>
+                   <h3 className="text-xl font-bold text-slate-900 mb-2">CSV / Excel Format</h3>
+                   <p className="text-slate-500 mb-6 text-sm leading-relaxed">Complete registry dataset including legal status, registration dates, and capital info.</p>
+                   <button onClick={() => downloadData('CSV')} className="w-full bg-slate-50 text-slate-700 font-bold py-3 rounded-xl border border-slate-200 hover:bg-blue-600 hover:text-white hover:border-blue-600 transition-all">Download CSV</button>
+               </div>
+
+               <div className="bg-white p-8 rounded-2xl shadow-lg border border-slate-100 hover:border-purple-300 transition-all group">
+                   <div className="w-14 h-14 bg-purple-50 rounded-xl flex items-center justify-center text-purple-600 mb-6 group-hover:scale-110 transition-transform"><FileCode className="w-7 h-7" /></div>
+                   <h3 className="text-xl font-bold text-slate-900 mb-2">JSON API Export</h3>
+                   <p className="text-slate-500 mb-6 text-sm leading-relaxed">Structured data for developers and integrations. Full schema including history logs.</p>
+                   <button onClick={() => downloadData('JSON')} className="w-full bg-slate-50 text-slate-700 font-bold py-3 rounded-xl border border-slate-200 hover:bg-purple-600 hover:text-white hover:border-purple-600 transition-all">Download JSON</button>
+               </div>
+          </div>
+
+          <div className="mt-16 bg-blue-900 text-white rounded-2xl p-8 flex flex-col md:flex-row items-center justify-between gap-8">
+              <div>
+                  <h4 className="text-xl font-bold mb-2">Developer API Access</h4>
+                  <p className="text-blue-200 text-sm max-w-md">Get real-time access to the registry via our secure REST API. Request an API key for higher rate limits.</p>
+              </div>
+              <button className="bg-white text-blue-900 px-6 py-3 rounded-xl font-bold hover:bg-blue-50 shadow-lg whitespace-nowrap">Read Documentation</button>
+          </div>
+      </div>
   );
 
   const renderFileReport = () => {
-    const company = companies.find(c => c.id === reportingCompanyId);
+    const company = companies.find(c => c.id === currentUser?.companyId);
     if (!company) return null;
+    const year = new Date().getFullYear() - 1;
 
     return (
-        <div className="max-w-2xl mx-auto px-4 py-10">
-            <button onClick={() => setView('PORTAL_DASHBOARD')} className="flex items-center text-sm font-bold text-slate-500 hover:text-blue-700 mb-6"><ArrowLeft className="w-4 h-4 mr-2" /> Back to Dashboard</button>
-            <div className="bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden">
-                <div className="bg-slate-50 border-b border-slate-100 p-6">
-                    <h2 className="text-xl font-serif font-bold text-slate-900">File Annual Report</h2>
-                    <p className="text-sm text-slate-500 mt-1">For {company.name} ({company.registryCode})</p>
-                </div>
-                <div className="p-8 space-y-6">
-                    <div>
-                        <label className="block text-sm font-bold text-slate-700 mb-2">Fiscal Year</label>
-                        <select className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl" defaultValue={2024}>
-                            <option value={2024}>2024</option>
-                            <option value={2023}>2023</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label className="block text-sm font-bold text-slate-700 mb-2">Total Revenue (SLE)</label>
-                        <input type="number" className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl" placeholder="0.00" id="reportRevenue" />
-                    </div>
-                    <div>
-                        <label className="block text-sm font-bold text-slate-700 mb-2">Transaction Volume</label>
-                        <input type="number" className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl" placeholder="0" id="reportVolume" />
-                    </div>
-                    <div>
-                        <label className="block text-sm font-bold text-slate-700 mb-2">Notes</label>
-                        <textarea className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl h-24" placeholder="Optional notes..."></textarea>
-                    </div>
-                    <div className="flex items-center gap-3 bg-purple-50 p-4 rounded-xl border border-purple-100">
-                        <input type="checkbox" id="publishWebsite" className="w-5 h-5 text-purple-600 rounded focus:ring-purple-500" />
-                        <div>
-                            <label htmlFor="publishWebsite" className="font-bold text-purple-900">Publish as Business Website</label>
-                            <p className="text-xs text-purple-700">Update your public landing page with this latest data.</p>
-                        </div>
-                    </div>
-                    <div className="pt-4 flex gap-4">
-                        <button 
-                            onClick={() => {
-                                const rev = (document.getElementById('reportRevenue') as HTMLInputElement).value;
-                                const vol = (document.getElementById('reportVolume') as HTMLInputElement).value;
-                                const publish = (document.getElementById('publishWebsite') as HTMLInputElement).checked;
-                                handleUserSubmitReport(company.id, 2024, Number(rev), Number(vol), publish);
-                            }}
-                            className="flex-1 bg-blue-600 text-white py-3 rounded-xl font-bold hover:bg-blue-700 transition-colors shadow-lg shadow-blue-200"
-                        >
-                            Submit Report
-                        </button>
-                        <button onClick={() => setView('PORTAL_DASHBOARD')} className="px-6 bg-white border border-slate-200 text-slate-700 py-3 rounded-xl font-bold hover:bg-slate-50 transition-colors">Cancel</button>
-                    </div>
-                </div>
-            </div>
+        <div className="min-h-[calc(100vh-80px)] bg-slate-50 flex items-center justify-center p-4">
+             <div className="bg-white max-w-lg w-full p-8 rounded-2xl shadow-xl border border-slate-200">
+                 <button onClick={() => setView('PORTAL_DASHBOARD')} className="text-slate-400 hover:text-slate-600 mb-6 flex items-center gap-2 text-sm font-bold"><ArrowLeft className="w-4 h-4" /> Cancel</button>
+                 <h2 className="text-2xl font-serif font-bold text-slate-900 mb-1">File Annual Report: {year}</h2>
+                 <p className="text-slate-500 text-sm mb-6">Submit financial summary for registry validation.</p>
+                 
+                 <div className="space-y-5">
+                     <div>
+                         <label className="block text-xs font-bold text-slate-500 mb-2 uppercase">Total Revenue (SLE)</label>
+                         <input id="reportRevenue" type="number" className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none font-bold text-slate-900" placeholder="0.00" />
+                     </div>
+                     <div>
+                         <label className="block text-xs font-bold text-slate-500 mb-2 uppercase">Transaction Volume (Count)</label>
+                         <input id="reportVolume" type="number" className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none font-bold text-slate-900" placeholder="0" />
+                     </div>
+                     
+                     <div className="bg-blue-50 p-4 rounded-xl border border-blue-100 flex items-start gap-3">
+                         <input id="publishWebsite" type="checkbox" className="mt-1 h-5 w-5 text-blue-600 rounded focus:ring-blue-500" />
+                         <div>
+                             <label htmlFor="publishWebsite" className="block text-sm font-bold text-blue-900">Auto-Generate & Publish Website</label>
+                             <p className="text-xs text-blue-700 mt-1">Create a public-facing business profile based on your registry data automatically.</p>
+                         </div>
+                     </div>
+
+                     <button 
+                        onClick={() => {
+                            const rev = Number((document.getElementById('reportRevenue') as HTMLInputElement).value);
+                            const vol = Number((document.getElementById('reportVolume') as HTMLInputElement).value);
+                            const pub = (document.getElementById('publishWebsite') as HTMLInputElement).checked;
+                            if (rev >= 0 && vol >= 0) {
+                                handleUserSubmitReport(company.id, year, rev, vol, pub);
+                            } else {
+                                alert("Please enter valid figures.");
+                            }
+                        }}
+                        className="w-full bg-blue-600 text-white font-bold py-4 rounded-xl hover:bg-blue-700 shadow-lg shadow-blue-200 transition-all mt-4"
+                     >
+                         Submit Report
+                     </button>
+                 </div>
+             </div>
         </div>
     );
   };
 
-  const renderEditCompanyDetails = () => {
-    const company = companies.find(c => c.id === editingCompanyId);
-    if (!company) return null;
-
+  const renderGeneratedWebsite = () => {
+    if (!selectedCompany) return null;
+    
+    // Simple template for the generated website
     return (
-        <div className="max-w-3xl mx-auto px-4 py-10">
-            <button onClick={() => setView(currentUser?.role === 'ADMIN' ? 'ADMIN_DASHBOARD' : 'PORTAL_DASHBOARD')} className="flex items-center text-sm font-bold text-slate-500 hover:text-blue-700 mb-6"><ArrowLeft className="w-4 h-4 mr-2" /> Back</button>
-            <div className="bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden">
-                <div className="bg-slate-50 border-b border-slate-100 p-6 flex justify-between items-center">
-                    <div>
-                        <h2 className="text-xl font-serif font-bold text-slate-900">Edit Company Profile</h2>
-                        <p className="text-sm text-slate-500 mt-1">{company.name}</p>
+        <div className="bg-white min-h-screen font-sans text-slate-800">
+            {/* Generated Header */}
+            <header className="bg-slate-900 text-white py-6 px-4 md:px-8">
+                <div className="max-w-6xl mx-auto flex justify-between items-center">
+                    <div className="flex items-center gap-3">
+                        <div className="bg-white/10 p-2 rounded-lg">
+                            {selectedCompany.businessLogo ? <img src={selectedCompany.businessLogo} className="w-8 h-8 rounded object-cover" /> : <Building2 className="w-8 h-8" />}
+                        </div>
+                        <h1 className="text-xl font-bold tracking-tight">{selectedCompany.name}</h1>
                     </div>
-                    <Save className="w-5 h-5 text-slate-400" />
+                    <nav className="hidden md:flex gap-6 text-sm font-medium text-slate-300">
+                        <a href="#about" className="hover:text-white">About</a>
+                        <a href="#services" className="hover:text-white">Services</a>
+                        <a href="#contact" className="hover:text-white">Contact</a>
+                    </nav>
+                    <button onClick={() => setView(currentUser ? 'PORTAL_DASHBOARD' : 'SEARCH')} className="text-xs bg-white/10 hover:bg-white/20 px-3 py-1.5 rounded text-white flex items-center gap-1">
+                        <LogOut className="w-3 h-3" /> Exit Site
+                    </button>
                 </div>
-                <div className="p-8 space-y-6">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                         <div>
-                            <label className="block text-sm font-bold text-slate-700 mb-2">Email Address</label>
-                            <input 
-                                type="email" 
-                                defaultValue={company.contactEmail}
-                                id="editEmail"
-                                className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none" 
-                            />
-                        </div>
-                        <div>
-                            <label className="block text-sm font-bold text-slate-700 mb-2">Phone Number</label>
-                            <input 
-                                type="text" 
-                                defaultValue={company.contactPhone}
-                                id="editPhone"
-                                className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none" 
-                            />
-                        </div>
+            </header>
+
+            {/* Hero Section */}
+            <div className="bg-slate-100 py-20 px-4 text-center">
+                <h2 className="text-4xl md:text-5xl font-bold text-slate-900 mb-4">Welcome to {selectedCompany.name}</h2>
+                <p className="text-xl text-slate-600 max-w-2xl mx-auto mb-8">
+                    We are a registered {selectedCompany.legalForm} committed to excellence in Sierra Leone.
+                </p>
+                <div className="flex justify-center gap-4">
+                    <a href="#contact" className="bg-blue-600 text-white px-8 py-3 rounded-full font-bold shadow-lg hover:bg-blue-700 transition-colors">Contact Us</a>
+                    <a href="#about" className="bg-white text-slate-700 px-8 py-3 rounded-full font-bold shadow-md hover:bg-slate-50 transition-colors">Learn More</a>
+                </div>
+            </div>
+
+            {/* About / Info */}
+            <div id="about" className="max-w-6xl mx-auto py-16 px-4 grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+                <div>
+                    <h3 className="text-2xl font-bold mb-4 text-slate-900">About Our Company</h3>
+                    <p className="text-slate-600 leading-relaxed mb-6">
+                        Established in {new Date(selectedCompany.registrationDate).getFullYear()}, {selectedCompany.name} has been a key player in the local economy. 
+                        We are officially registered with the Sierra Leone Business Registry (Reg: {selectedCompany.registryCode}).
+                    </p>
+                    <ul className="space-y-3">
+                        <li className="flex items-center gap-3 text-slate-700">
+                            <CheckCircle className="w-5 h-5 text-green-500" /> Officially Registered Entity
+                        </li>
+                        <li className="flex items-center gap-3 text-slate-700">
+                            <CheckCircle className="w-5 h-5 text-green-500" /> Compliant with Local Regulations
+                        </li>
+                        <li className="flex items-center gap-3 text-slate-700">
+                            <CheckCircle className="w-5 h-5 text-green-500" /> Verified Address in {selectedCompany.address.split(',').pop()?.trim()}
+                        </li>
+                    </ul>
+                </div>
+                <div className="bg-slate-200 rounded-2xl h-80 flex items-center justify-center text-slate-400">
+                    <ImageIcon className="w-16 h-16" />
+                </div>
+            </div>
+
+            {/* Stats / Trust */}
+            <div className="bg-blue-900 text-white py-16">
+                 <div className="max-w-6xl mx-auto px-4 grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+                     <div>
+                         <div className="text-4xl font-bold mb-2">{new Date().getFullYear() - new Date(selectedCompany.registrationDate).getFullYear()}</div>
+                         <div className="text-blue-300 text-sm font-bold uppercase">Years Active</div>
+                     </div>
+                     <div>
+                         <div className="text-4xl font-bold mb-2">100%</div>
+                         <div className="text-blue-300 text-sm font-bold uppercase">Verified</div>
+                     </div>
+                     <div>
+                         <div className="text-4xl font-bold mb-2">{selectedCompany.managementBoard.length}</div>
+                         <div className="text-blue-300 text-sm font-bold uppercase">Key Executives</div>
+                     </div>
+                     <div>
+                         <div className="text-4xl font-bold mb-2">SL</div>
+                         <div className="text-blue-300 text-sm font-bold uppercase">Local Focus</div>
+                     </div>
+                 </div>
+            </div>
+
+            {/* Contact */}
+            <div id="contact" className="max-w-4xl mx-auto py-16 px-4 text-center">
+                <h3 className="text-3xl font-bold mb-8 text-slate-900">Get in Touch</h3>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div className="p-6 bg-slate-50 rounded-xl border border-slate-200">
+                        <MapPin className="w-8 h-8 text-blue-600 mx-auto mb-4" />
+                        <h4 className="font-bold mb-2">Visit Us</h4>
+                        <p className="text-slate-600 text-sm">{selectedCompany.address}</p>
                     </div>
-                    <div>
-                        <label className="block text-sm font-bold text-slate-700 mb-2">Office Address</label>
-                        <input 
-                            type="text" 
-                            defaultValue={company.address}
-                            id="editAddress"
-                            className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none" 
-                        />
+                    <div className="p-6 bg-slate-50 rounded-xl border border-slate-200">
+                         <div className="w-8 h-8 text-blue-600 mx-auto mb-4 flex items-center justify-center font-bold">@</div>
+                        <h4 className="font-bold mb-2">Email Us</h4>
+                        <p className="text-slate-600 text-sm">{selectedCompany.contactEmail}</p>
                     </div>
-                    <div>
-                        <label className="block text-sm font-bold text-slate-700 mb-2">Website URL</label>
-                        <input 
-                            type="text" 
-                            defaultValue={company.website}
-                            id="editWebsite"
-                            className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none" 
-                        />
-                    </div>
-                    
-                    <div className="pt-6 border-t border-slate-100 flex justify-end gap-3">
-                        <button onClick={() => setView(currentUser?.role === 'ADMIN' ? 'ADMIN_DASHBOARD' : 'PORTAL_DASHBOARD')} className="px-6 py-3 rounded-xl font-bold text-slate-600 hover:bg-slate-50 transition-colors">Cancel</button>
-                        <button 
-                            onClick={() => {
-                                handleUpdateCompanyDetails(company.id, {
-                                    contactEmail: (document.getElementById('editEmail') as HTMLInputElement).value,
-                                    contactPhone: (document.getElementById('editPhone') as HTMLInputElement).value,
-                                    address: (document.getElementById('editAddress') as HTMLInputElement).value,
-                                    website: (document.getElementById('editWebsite') as HTMLInputElement).value
-                                });
-                            }}
-                            className="px-8 py-3 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 transition-colors shadow-lg shadow-blue-200"
-                        >
-                            Save Changes
-                        </button>
+                    <div className="p-6 bg-slate-50 rounded-xl border border-slate-200">
+                        <Smartphone className="w-8 h-8 text-blue-600 mx-auto mb-4" />
+                        <h4 className="font-bold mb-2">Call Us</h4>
+                        <p className="text-slate-600 text-sm">{selectedCompany.contactPhone}</p>
                     </div>
                 </div>
             </div>
+
+            <footer className="bg-slate-900 text-slate-500 py-8 text-center text-sm">
+                <p>&copy; {new Date().getFullYear()} {selectedCompany.name}. All rights reserved.</p>
+                <p className="mt-2 text-xs">Site generated by Sierra Leone Business Registry Platform.</p>
+            </footer>
         </div>
     );
   };
@@ -1483,7 +1631,17 @@ export default function App() {
         {view === 'NAME_CHECK' && renderNameCheckView()}
         {view === 'OPEN_DATA' && renderOpenData()}
         {view === 'PORTAL_FILE_REPORT' && renderFileReport()}
-        {view === 'PORTAL_EDIT_DETAILS' && renderEditCompanyDetails()}
+        {view === 'PORTAL_EDIT_DETAILS' && (editingCompanyId || editingCompanyId === NEW_COMPANY_ID) && (
+          <EditCompanyDetails
+            company={editingCompanyId === NEW_COMPANY_ID ? EMPTY_COMPANY : companies.find(c => c.id === editingCompanyId)!}
+            currentUser={currentUser}
+            onBack={() => setView(currentUser?.role === 'ADMIN' ? 'ADMIN_DASHBOARD' : 'PORTAL_DASHBOARD')}
+            onSave={(id, updates) => {
+                if (id === NEW_COMPANY_ID) handleCreateCompany(updates);
+                else handleUpdateCompanyDetails(id, updates);
+            }}
+          />
+        )}
         {view === 'DUE_DILIGENCE' && renderDueDiligence()}
         {view === 'GENERATED_WEBSITE' && renderGeneratedWebsite()}
       </main>

@@ -60,13 +60,14 @@ export interface Company {
   history: AuditLog[];
   
   // New Enhanced Fields
-  managementBoard: string[]; // Top Administrative Members
+  managementBoard: { name: string; position: string }[]; // Top Administrative Members
   contactEmail: string;
   contactPhone: string;
   beneficialOwners: string[];
-  taxDebt: number; // Amount in SLE, 0 means clean
+  taxDebt: number; // Amount in SLE, 0 means clean. Managed by Admin.
   commercialPledges: number; // Number of active pledges
   relationships: { entity: string; type: 'Subsidiary' | 'Parent' | 'Partner' | 'Shareholder' }[];
+  ownershipGraphUrl?: string; // Admin added photo of ownership graph
   
   // Business Portal Features
   transactions: Transaction[];
