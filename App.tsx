@@ -825,27 +825,27 @@ export default function App() {
 
   const renderSearch = () => (
     <div className="bg-slate-50 min-h-[calc(100vh-80px)]">
-      {/* Decreased height of blue section */}
-      <div className="bg-gradient-to-b from-blue-900 to-blue-800 text-white pt-28 pb-20 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
+      {/* Reverted to blue background for the hero section */}
+      <div className="bg-gradient-to-br from-blue-900 via-blue-800 to-blue-900 text-white pt-28 pb-20 px-4 sm:px-6 lg:px-8 relative overflow-hidden border-b border-blue-800">
         <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10"></div>
         <div className="relative max-w-4xl mx-auto text-center z-10">
           <h2 className="text-4xl md:text-5xl font-serif font-bold tracking-tight mb-4 drop-shadow-lg">
-            Sierra Leone <br/> <span className="text-blue-300">Business Registry</span>
+            Sierra Leone <br/> <span className="text-blue-200">Business Registry</span>
           </h2>
           <p className="text-lg text-blue-100 max-w-2xl mx-auto mb-8 font-light">
             Verify entities, access annual reports, and conduct due diligence with blockchain-backed security.
           </p>
-          <div className="max-w-2xl mx-auto bg-white p-2 rounded-2xl shadow-2xl flex flex-col sm:flex-row gap-2">
+          <div className="max-w-2xl mx-auto bg-white p-2 rounded-2xl shadow-2xl flex flex-col sm:flex-row gap-2 border border-slate-100 ring-1 ring-slate-200/50">
              <div className="flex-grow relative">
                 <Search className="absolute left-4 top-4 w-6 h-6 text-slate-400" />
-                <input type="text" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} placeholder={t('searchPlaceholder')} className="w-full pl-12 pr-4 py-4 rounded-xl text-slate-900 focus:outline-none text-lg" />
+                <input type="text" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} placeholder={t('searchPlaceholder')} className="w-full pl-12 pr-4 py-4 rounded-xl text-slate-900 focus:outline-none text-lg bg-white placeholder:text-slate-400" />
              </div>
              <button className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-4 rounded-xl font-bold text-lg transition-all shadow-lg">
                {t('search')}
              </button>
           </div>
           <div className="mt-6 flex justify-center">
-            <button onClick={() => setShowFilters(!showFilters)} className="text-blue-300 hover:text-white text-sm font-medium flex items-center gap-2 border-b border-dashed border-blue-400 pb-0.5">
+            <button onClick={() => setShowFilters(!showFilters)} className="text-blue-200 hover:text-white text-sm font-medium flex items-center gap-2 border-b border-dashed border-blue-400 pb-0.5">
               Advanced Filters <ChevronRight className={`w-3 h-3 transition-transform ${showFilters ? 'rotate-90' : ''}`} />
             </button>
           </div>
