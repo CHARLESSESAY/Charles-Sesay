@@ -50,7 +50,10 @@ import {
   TrendingDown,
   ArrowRight,
   Trash2,
-  Loader2
+  Loader2,
+  UploadCloud,
+  CheckSquare,
+  Award
 } from 'lucide-react';
 
 // --- MOCK DATA ---
@@ -531,7 +534,7 @@ export default function App() {
   // Reporting/Editing State
   const [reportingCompanyId, setReportingCompanyId] = useState<string | null>(null);
   const [editingCompanyId, setEditingCompanyId] = useState<string | null>(null);
-
+  
   // Translation Helper for UI
   const t = (key: keyof typeof TRANSLATIONS.en) => TRANSLATIONS[lang][key] || key;
 
@@ -654,7 +657,10 @@ export default function App() {
   };
   
   const checkNameAvailability = (name: string) => { if (!name.trim()) { setNameAvailability('IDLE'); return; } setNameAvailability('CHECKING'); setTimeout(() => { const taken = companies.some(c => c.name.toLowerCase() === name.toLowerCase()); setNameAvailability(taken ? 'TAKEN' : 'AVAILABLE'); }, 800); };
-  const handleDueDiligence = (id: string) => { setSelectedCompanyId(id); setView('DUE_DILIGENCE'); };
+  const handleDueDiligence = (id: string) => { 
+      setSelectedCompanyId(id); 
+      setView('DUE_DILIGENCE'); 
+    };
 
   // Data Mutators
   const addAuditLog = (companyId: string, action: string, details: string, actor: string) => {
@@ -779,6 +785,7 @@ export default function App() {
                 <Hand className="w-5 h-5" />
              </button>
             <div className="hidden md:flex items-center bg-black/20 p-1.5 rounded-xl mr-2 gap-1 border border-white/5">
+                <span className="text-[10px] text-blue-300 font-bold uppercase tracking-wider ml-2 mr-1">Translate to</span>
                 {(['en', 'zh', 'fr', 'es', 'hi', 'ru'] as LangCode[]).map((l) => (
                     <button key={l} onClick={() => setLang(l)} className={`px-2.5 py-1 text-[10px] font-bold rounded-lg transition-all ${lang === l ? 'bg-blue-600 shadow text-white' : 'text-blue-400 hover:text-white'}`}>
                         {l.toUpperCase()}
@@ -892,81 +899,150 @@ export default function App() {
   const renderDueDiligence = () => {
       if (!selectedCompany) return null;
       
-      const riskScore = selectedCompany.taxDebt > 0 ? 65 : selectedCompany.reports.some(r => r.status === ReportStatus.MISSING) ? 80 : 98;
-      const riskColor = riskScore > 90 ? 'text-green-500' : riskScore > 70 ? 'text-yellow-500' : 'text-red-500';
+      // Mock data for public display
+      const lastReport = selectedCompany.reports[0] || { year: 'N/A', status: 'Pending' };
+      const nextReportDue = new Date();
+      nextReportDue.setFullYear(nextReportDue.getFullYear() + 1);
 
       return (
-          <div className="max-w-4xl mx-auto px-4 py-10">
+          <div className="max-w-5xl mx-auto px-4 py-12">
               <button onClick={() => setView('SEARCH')} className="flex items-center text-sm font-bold text-slate-500 hover:text-blue-700 mb-6"><ArrowLeft className="w-4 h-4 mr-2" /> Back to Search</button>
               
-              <div className="bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden">
-                  <div className="bg-blue-900 p-8 text-white flex justify-between items-start">
-                      <div>
-                          <div className="flex items-center gap-2 text-blue-300 mb-2">
-                              <Briefcase className="w-4 h-4" />
-                              <span className="text-xs font-bold uppercase tracking-widest">Official Due Diligence Report</span>
-                          </div>
-                          <h1 className="text-3xl font-serif font-bold">{selectedCompany.name}</h1>
-                          <p className="opacity-80 mt-1 font-mono">{selectedCompany.registryCode}</p>
+              <div className="bg-white shadow-2xl rounded-xl overflow-hidden border border-slate-200 print:shadow-none">
+                  {/* Header Banner */}
+                  <div className="bg-slate-900 text-white p-8 md:p-12 relative overflow-hidden">
+                      <div className="absolute top-0 right-0 p-8 opacity-5">
+                          <ShieldCheck className="w-64 h-64" />
                       </div>
-                      <div className="text-right">
-                          <div className="text-xs font-bold opacity-60 uppercase">Compliance Score</div>
-                          <div className={`text-4xl font-bold ${riskColor}`}>{riskScore}/100</div>
+                      <div className="relative z-10 flex flex-col md:flex-row justify-between items-start gap-6">
+                          <div>
+                              <div className="flex items-center gap-2 text-yellow-500 mb-2 font-bold tracking-wider text-xs uppercase">
+                                  <Globe className="w-4 h-4" /> Official Registry Extract
+                              </div>
+                              <h1 className="text-4xl md:text-5xl font-serif font-bold leading-tight mb-2">
+                                  {selectedCompany.name}
+                              </h1>
+                              <p className="text-slate-300 font-mono text-lg">{selectedCompany.registryCode}</p>
+                          </div>
+                          <div className="text-right">
+                              <div className="inline-block px-4 py-2 border border-white/20 rounded-lg backdrop-blur-sm bg-white/5">
+                                  <p className="text-xs text-slate-300 uppercase font-bold mb-1">Current Status</p>
+                                  <p className={`text-xl font-bold ${selectedCompany.status === 'Active' ? 'text-green-400' : 'text-red-400'}`}>
+                                      {selectedCompany.status.toUpperCase()}
+                                  </p>
+                              </div>
+                          </div>
                       </div>
                   </div>
 
-                  <div className="p-8 grid grid-cols-1 md:grid-cols-2 gap-8">
-                      {/* Left Column */}
-                      <div className="space-y-6">
-                          <div className="bg-slate-50 p-4 rounded-xl border border-slate-100">
-                              <h3 className="font-bold text-slate-900 mb-4 flex items-center gap-2"><FileCheck className="w-5 h-5 text-blue-600" /> Registry Verification</h3>
-                              <ul className="space-y-3 text-sm">
-                                  <li className="flex justify-between">
-                                      <span className="text-slate-500">Legal Status</span>
-                                      <span className={`font-bold ${selectedCompany.status === 'Active' ? 'text-green-600' : 'text-red-600'}`}>{selectedCompany.status}</span>
-                                  </li>
-                                  <li className="flex justify-between">
-                                      <span className="text-slate-500">Registration Date</span>
-                                      <span className="font-bold text-slate-900">{selectedCompany.registrationDate}</span>
-                                  </li>
-                                  <li className="flex justify-between">
-                                      <span className="text-slate-500">Tax Good Standing</span>
-                                      <span className={`font-bold ${selectedCompany.taxDebt === 0 ? 'text-green-600' : 'text-red-600'}`}>{selectedCompany.taxDebt === 0 ? 'Verified' : 'Outstanding Debt'}</span>
-                                  </li>
-                              </ul>
-                          </div>
+                  {/* Verification Bar */}
+                  <div className="bg-slate-100 border-b border-slate-200 px-8 py-3 flex flex-wrap gap-6 text-xs font-bold text-slate-600">
+                      <span className="flex items-center gap-2"><CheckCircle className="w-4 h-4 text-green-600" /> Identity Verified</span>
+                      <span className="flex items-center gap-2"><Database className="w-4 h-4 text-blue-600" /> Blockchain Secured</span>
+                      <span className="flex items-center gap-2 text-slate-400 ml-auto font-mono">Generated: {new Date().toISOString().split('T')[0]}</span>
+                  </div>
 
-                          <div className="bg-slate-50 p-4 rounded-xl border border-slate-100">
-                              <h3 className="font-bold text-slate-900 mb-4 flex items-center gap-2"><Users className="w-5 h-5 text-blue-600" /> Beneficial Ownership</h3>
-                              <div className="flex flex-wrap gap-2">
-                                  {selectedCompany.beneficialOwners.map((owner, i) => (
-                                      <span key={i} className="bg-white border border-slate-200 px-3 py-1 rounded-full text-xs font-bold text-slate-700 shadow-sm">{owner}</span>
-                                  ))}
+                  {/* Content Body */}
+                  <div className="p-8 md:p-12 space-y-12">
+                      
+                      {/* Section 1: Corporate Summary */}
+                      <section>
+                          <h3 className="text-xl font-serif font-bold text-slate-900 mb-6 pb-2 border-b border-slate-200 flex items-center gap-2">
+                              <Building2 className="w-5 h-5 text-slate-400" /> Corporate Summary
+                          </h3>
+                          <div className="grid grid-cols-1 md:grid-cols-3 gap-y-8 gap-x-12">
+                              <div>
+                                  <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Legal Form</p>
+                                  <p className="font-semibold text-slate-800">{selectedCompany.legalForm}</p>
+                              </div>
+                              <div>
+                                  <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Registration Date</p>
+                                  <p className="font-semibold text-slate-800">{tDate(selectedCompany.registrationDate)}</p>
+                              </div>
+                              <div>
+                                  <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Registered Capital</p>
+                                  <p className="font-semibold text-slate-800">{tCurrency(selectedCompany.capital)}</p>
+                              </div>
+                              <div className="md:col-span-2">
+                                  <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Registered Address</p>
+                                  <p className="font-semibold text-slate-800">{selectedCompany.address}</p>
                               </div>
                           </div>
-                      </div>
+                      </section>
 
-                      {/* Right Column */}
-                      <div className="space-y-6">
-                          <div className="bg-slate-50 p-4 rounded-xl border border-slate-100">
-                              <h3 className="font-bold text-slate-900 mb-4 flex items-center gap-2"><Network className="w-5 h-5 text-blue-600" /> Blockchain Evidence</h3>
-                              <div className="space-y-3">
-                                  {selectedCompany.history.slice(0, 3).map((log) => (
-                                      <div key={log.id} className="text-xs bg-white p-2 rounded border border-slate-200">
-                                          <div className="flex justify-between mb-1">
-                                              <span className="font-bold text-slate-700">{log.action}</span>
-                                              <span className="text-slate-400">{log.timestamp.split('T')[0]}</span>
-                                          </div>
-                                          <div className="font-mono text-slate-400 truncate">{log.hash}</div>
-                                      </div>
-                                  ))}
+                      {/* Section 2: Compliance & Standing */}
+                      <section>
+                          <h3 className="text-xl font-serif font-bold text-slate-900 mb-6 pb-2 border-b border-slate-200 flex items-center gap-2">
+                              <FileText className="w-5 h-5 text-slate-400" /> Compliance & Standing
+                          </h3>
+                          <div className="bg-slate-50 rounded-xl p-6 border border-slate-200 grid grid-cols-1 md:grid-cols-2 gap-8">
+                              <div className="flex items-start gap-4">
+                                  <div className={`p-3 rounded-lg ${selectedCompany.taxDebt === 0 ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                                      <ShieldCheck className="w-6 h-6" />
+                                  </div>
+                                  <div>
+                                      <p className="font-bold text-slate-900">Tax Status</p>
+                                      <p className="text-sm text-slate-600 mt-1">
+                                          {selectedCompany.taxDebt === 0 
+                                              ? "The entity is in good standing with no outstanding tax liabilities recorded."
+                                              : `Alert: Outstanding liabilities detected.`}
+                                      </p>
+                                  </div>
+                              </div>
+                              <div className="flex items-start gap-4">
+                                  <div className="p-3 rounded-lg bg-blue-100 text-blue-700">
+                                      <Calendar className="w-6 h-6" />
+                                  </div>
+                                  <div>
+                                      <p className="font-bold text-slate-900">Annual Filing</p>
+                                      <p className="text-sm text-slate-600 mt-1">
+                                          Last filing: {lastReport.year} ({lastReport.status}).<br/>
+                                          Next filing due: {formatDate(nextReportDue.toISOString())}.
+                                      </p>
+                                  </div>
                               </div>
                           </div>
+                      </section>
 
-                           <button className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-xl shadow-lg flex items-center justify-center gap-2 transition-transform active:scale-95">
-                                <Download className="w-5 h-5" /> Download Certified PDF
-                           </button>
-                      </div>
+                      {/* Section 3: Management */}
+                      <section>
+                          <h3 className="text-xl font-serif font-bold text-slate-900 mb-6 pb-2 border-b border-slate-200 flex items-center gap-2">
+                              <Users className="w-5 h-5 text-slate-400" /> Management & Officers
+                          </h3>
+                          <div className="overflow-hidden border border-slate-200 rounded-xl">
+                              <table className="min-w-full divide-y divide-slate-200">
+                                  <thead className="bg-slate-50">
+                                      <tr>
+                                          <th className="px-6 py-3 text-left text-xs font-bold text-slate-500 uppercase">Name</th>
+                                          <th className="px-6 py-3 text-left text-xs font-bold text-slate-500 uppercase">Role</th>
+                                          <th className="px-6 py-3 text-left text-xs font-bold text-slate-500 uppercase">Appointed</th>
+                                      </tr>
+                                  </thead>
+                                  <tbody className="divide-y divide-slate-200 bg-white">
+                                      {selectedCompany.managementBoard.map((member, i) => (
+                                          <tr key={i}>
+                                              <td className="px-6 py-4 text-sm font-bold text-slate-900">{member.name}</td>
+                                              <td className="px-6 py-4 text-sm text-slate-600">{member.position}</td>
+                                              <td className="px-6 py-4 text-sm text-slate-400 font-mono">2023-01-15</td>
+                                          </tr>
+                                      ))}
+                                  </tbody>
+                              </table>
+                          </div>
+                      </section>
+
+                  </div>
+                  
+                  {/* Footer */}
+                  <div className="bg-slate-50 border-t border-slate-200 p-8 text-center">
+                      <p className="text-slate-400 text-xs mb-4">
+                          This document is a certified extract from the Sierra Leone Electronic Business Registry. 
+                          Generated on {new Date().toLocaleString()}. 
+                          Verify authenticity at <a href="#" className="text-blue-600 hover:underline">registry.gov.sl/verify</a>.
+                      </p>
+                      <button className="bg-blue-900 text-white px-8 py-3 rounded-lg font-bold shadow-lg hover:bg-blue-800 transition-colors flex items-center gap-2 mx-auto">
+                          <Download className="w-4 h-4" /> Download PDF Extract
+                      </button>
                   </div>
               </div>
           </div>
@@ -1290,7 +1366,7 @@ export default function App() {
                 <p className="text-slate-500">Manage your business profile, filings, and compliance.</p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-10">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
                 <div className="bg-blue-900 text-white p-6 rounded-2xl shadow-xl relative overflow-hidden">
                     <div className="absolute top-0 right-0 p-4 opacity-10"><ShieldCheck className="w-24 h-24" /></div>
                     <p className="text-blue-200 text-sm font-bold uppercase tracking-wider mb-2">Compliance Status</p>
@@ -1312,6 +1388,13 @@ export default function App() {
                      <p className={`${isReportPending ? 'text-orange-800' : 'text-green-800'} text-xs font-bold uppercase tracking-wider mb-3`}>Annual Filing</p>
                      <h3 className={`text-lg font-bold ${isReportPending ? 'text-orange-900' : 'text-green-900'} mb-1`}>{isReportPending ? `File ${currentYear - 1} Report` : 'Up to Date'}</h3>
                      <p className={`text-sm ${isReportPending ? 'text-orange-700' : 'text-green-700'}`}>{isReportPending ? 'Due immediately.' : 'No actions needed.'}</p>
+                </div>
+
+                <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 relative group cursor-pointer hover:border-blue-300 transition-all" onClick={() => { setSelectedCompanyId(company.id); setView('DUE_DILIGENCE'); }}>
+                    <div className="absolute top-4 right-4 bg-slate-100 p-2 rounded-lg text-slate-400 group-hover:bg-blue-50 group-hover:text-blue-600 transition-colors"><Briefcase className="w-5 h-5" /></div>
+                    <p className="text-slate-400 text-xs font-bold uppercase tracking-wider mb-3">Public Records</p>
+                    <h3 className="text-lg font-bold text-slate-800 mb-1">View Registry Extract</h3>
+                    <p className="text-sm text-slate-500">See official public details.</p>
                 </div>
             </div>
 
@@ -1379,12 +1462,28 @@ export default function App() {
 
   const renderNameCheckView = () => (
       <div className="min-h-[calc(100vh-80px)] bg-slate-50 flex items-center justify-center p-4">
-          <div className="bg-white p-10 rounded-3xl shadow-2xl max-w-2xl w-full border border-slate-100 text-center">
+          <div className="bg-white p-10 rounded-3xl shadow-2xl max-w-3xl w-full border border-slate-100 text-center">
               <div className="w-20 h-20 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-6">
                   <Search className="w-10 h-10 text-blue-600" />
               </div>
               <h2 className="text-3xl font-serif font-bold text-slate-900 mb-2">Name Availability Check</h2>
-              <p className="text-slate-500 mb-8">Ensure your proposed business name is unique before registration.</p>
+              <p className="text-slate-500 mb-8 max-w-lg mx-auto">Ensure your proposed business name is unique within the Sierra Leone registry before proceeding with incorporation.</p>
+              
+              <div className="bg-blue-50 border border-blue-100 rounded-2xl p-6 mb-10 text-left relative overflow-hidden group hover:border-blue-300 transition-all shadow-sm">
+                  <div className="absolute top-0 right-0 p-4 opacity-10"><ExternalLink className="w-24 h-24 text-blue-900" /></div>
+                  <div className="relative z-10">
+                      <h4 className="text-blue-900 font-serif font-bold text-lg mb-2 flex items-center gap-2">
+                          <Globe className="w-5 h-5 text-blue-600" />
+                          National Investment Board (NIB) Directory
+                      </h4>
+                      <p className="text-sm text-blue-800 leading-relaxed mb-4">
+                          For a comprehensive investment landscape and to cross-reference business entities, please consult the <strong>National Investment Board (NIB)</strong>. The NIB acts as the primary gateway for investors in Sierra Leone, facilitating business registration, licenses, and providing crucial regulatory guidance.
+                      </p>
+                      <a href="https://nib.gov.sl" target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 bg-blue-600 text-white px-5 py-2.5 rounded-lg text-sm font-bold shadow-md hover:bg-blue-700 transition-colors">
+                          Visit Official NIB Portal <ArrowRight className="w-4 h-4" />
+                      </a>
+                  </div>
+              </div>
               
               <div className="relative max-w-lg mx-auto mb-8">
                   <input 
