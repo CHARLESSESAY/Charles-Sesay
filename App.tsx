@@ -37,6 +37,7 @@ import {
   PenTool,
   Home,
   Plus,
+  Upload,
   Image as ImageIcon,
   MapPin,
   Video,
@@ -89,23 +90,23 @@ const INITIAL_COMPANIES: Company[] = [
     isWebsitePublished: true
   },
   {
-    id: 'c_airtel',
+    id: 'c_orange',
     registryCode: 'PV 8901',
-    name: 'Airtel Sierra Leone Ltd',
+    name: 'Orange Sierra Leone Ltd',
     legalForm: LegalForm.LTD,
     registrationDate: '2004-06-15',
     capital: 45000000,
     address: '25 Main Motor Road, Freetown',
-    website: 'www.airtel.sl',
-    businessLogo: 'https://placehold.co/200x200/ef4444/ffffff?text=Airtel',
+    website: 'www.orange.sl',
+    businessLogo: 'https://placehold.co/200x200/f97316/ffffff?text=Orange',
     status: 'Active',
-    managementBoard: [{ name: 'Sunil Bharti', position: 'Chairman' }, { name: 'Local Director', position: 'Country Manager' }],
-    contactEmail: 'support@airtel.sl',
+    managementBoard: [{ name: 'Sekou Drame', position: 'CEO' }, { name: 'Local Director', position: 'Country Manager' }],
+    contactEmail: 'support@orange.sl',
     contactPhone: '+232 78 000 000',
-    beneficialOwners: ['Bharti Airtel'],
+    beneficialOwners: ['Orange Group'],
     taxDebt: 0,
     commercialPledges: 3,
-    relationships: [{ entity: 'Bharti Airtel', type: 'Parent' }],
+    relationships: [{ entity: 'Orange Group', type: 'Parent' }],
     reports: [
       { year: 2023, status: ReportStatus.APPROVED, revenue: 380000000, transactionVolume: 120000 }
     ],
@@ -515,6 +516,17 @@ export default function App() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isAIThinking, setIsAIThinking] = useState(false);
   const [hoverText, setHoverText] = useState('');
+  const [directoryLogo, setDirectoryLogo] = useState('https://placehold.co/180x60/ffffff/1e3a8a?text=SBD+SL+Directory');
+
+  const capitalCities = ['Freetown', 'Bo', 'Kenema', 'Makeni', 'Koidu'];
+  const [cityIndex, setCityIndex] = useState(0);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCityIndex((prev) => (prev + 1) % capitalCities.length);
+    }, 3000);
+    return () => clearInterval(interval);
+  }, []);
 
   // Name Check State
   const [nameAvailability, setNameAvailability] = useState<'IDLE' | 'CHECKING' | 'AVAILABLE' | 'TAKEN'>('IDLE');
@@ -770,6 +782,18 @@ export default function App() {
     alert(`Downloading Bulk Data in ${format} format...`);
   };
 
+  const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setDirectoryLogo(reader.result as string);
+        alert('Logo uploaded successfully!');
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   // --- RENDERERS ---
 
   const renderNavbar = () => (
@@ -779,7 +803,7 @@ export default function App() {
           <div className="flex items-center cursor-pointer gap-3 sm:gap-4 group" onClick={() => { setView('SEARCH'); setIsMobileMenuOpen(false); }}>
             <div className="bg-white p-1.5 sm:p-2 rounded-lg sm:rounded-xl shadow-lg border border-blue-100 group-hover:scale-105 transition-transform flex items-center justify-center">
                 <img 
-                    src="https://placehold.co/180x60/ffffff/1e3a8a?text=SBD+SL+Directory" 
+                    src={directoryLogo} 
                     alt="SL Business Directory Logo" 
                     className="h-7 sm:h-10 w-auto object-contain" 
                 />
@@ -918,10 +942,24 @@ export default function App() {
       <div className="bg-gradient-to-br from-blue-900 via-blue-800 to-blue-900 text-white pt-20 sm:pt-28 pb-16 sm:pb-20 px-4 sm:px-6 lg:px-8 relative overflow-hidden border-b border-blue-800">
         <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10"></div>
         <div className="relative max-w-4xl mx-auto text-center z-10">
-          <h2 className="text-3xl sm:text-4xl md:text-5xl font-serif font-bold tracking-tight mb-4 drop-shadow-lg">
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-serif font-bold tracking-tight mb-4 drop-shadow-lg text-white">
             Sierra Leone <br/> <span className="text-blue-200">Business Registry</span>
           </h2>
-          <p className="text-base sm:text-lg text-blue-100 max-w-2xl mx-auto mb-8 font-light">
+          <div className="h-8 mb-4 flex justify-center items-center overflow-hidden">
+            <AnimatePresence mode="wait">
+              <motion.p
+                key={capitalCities[cityIndex]}
+                initial={{ y: 20, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                exit={{ y: -20, opacity: 0 }}
+                transition={{ duration: 0.5 }}
+                className="text-xl sm:text-2xl font-bold text-yellow-400 tracking-widest uppercase drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]"
+              >
+                {capitalCities[cityIndex]}
+              </motion.p>
+            </AnimatePresence>
+          </div>
+          <p className="text-base sm:text-lg text-white max-w-2xl mx-auto mb-8 font-medium drop-shadow-md">
             Verify entities, access annual reports, and conduct due diligence with blockchain-backed security.
           </p>
           <div className="max-w-2xl mx-auto bg-white p-1.5 sm:p-2 rounded-xl sm:rounded-2xl shadow-2xl flex flex-col sm:flex-row gap-2 border border-slate-100 ring-1 ring-slate-200/50">
@@ -1369,6 +1407,51 @@ export default function App() {
           <div className="flex justify-between items-center mb-8">
               <h2 className="text-3xl font-serif font-bold text-slate-800">Registrar Dashboard</h2>
               <button onClick={() => { setEditingCompanyId(NEW_COMPANY_ID); setView('PORTAL_EDIT_DETAILS'); }} className="bg-blue-900 text-white px-6 py-3 rounded-xl font-bold shadow-lg hover:bg-blue-800 flex items-center gap-2"><Plus className="w-5 h-5" /> Register New Entity</button>
+          </div>
+
+          {/* System Settings Section */}
+          <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden mb-8">
+              <div className="bg-blue-50 border-b border-blue-100 p-6 flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                      <Settings className="w-6 h-6 text-blue-600" />
+                      <h3 className="font-bold text-blue-900">System Settings</h3>
+                  </div>
+              </div>
+              <div className="p-6">
+                  <div className="max-w-md space-y-6">
+                      <div>
+                          <label className="block text-sm font-bold text-slate-700 mb-2">Upload Directory Logo</label>
+                          <div className="flex items-center gap-4">
+                              <div className="h-16 w-16 bg-slate-100 rounded-lg border border-slate-200 flex items-center justify-center overflow-hidden">
+                                  <img src={directoryLogo} alt="Current Logo" className="h-full w-full object-contain" />
+                              </div>
+                              <label className="flex-grow">
+                                  <div className="flex items-center justify-center w-full h-12 px-4 transition bg-white border-2 border-slate-300 border-dashed rounded-lg appearance-none cursor-pointer hover:border-blue-400 focus:outline-none">
+                                      <span className="flex items-center space-x-2">
+                                          <Upload className="w-5 h-5 text-slate-400" />
+                                          <span className="font-medium text-slate-600 text-sm">Choose file...</span>
+                                      </span>
+                                      <input type="file" name="logo_upload" className="hidden" accept="image/*" onChange={handleLogoUpload} />
+                                  </div>
+                              </label>
+                          </div>
+                          <p className="text-[10px] text-slate-400 mt-2 italic">Recommended: Transparent PNG, 180x60px.</p>
+                      </div>
+
+                      <div>
+                          <label className="block text-sm font-bold text-slate-700 mb-2">Directory Logo URL (Fallback)</label>
+                          <div className="flex gap-2">
+                              <input 
+                                type="text" 
+                                value={directoryLogo} 
+                                onChange={(e) => setDirectoryLogo(e.target.value)}
+                                className="flex-grow px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm"
+                                placeholder="https://example.com/logo.png"
+                              />
+                          </div>
+                      </div>
+                  </div>
+              </div>
           </div>
 
           {/* Pending Reports Section */}
