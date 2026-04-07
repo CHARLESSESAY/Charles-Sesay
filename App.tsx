@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useEffect, useRef } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
 import { Company, LegalForm, ReportStatus, ViewState, AuditLog, AnnualReport, Transaction } from './types';
 import { generateHash, formatCurrency, formatDate } from './utils';
 import { SearchFilters } from './components/SearchFilters';
@@ -13,6 +14,7 @@ import {
   CheckCircle, 
   XCircle, 
   ArrowLeft,
+  X,
   Search,
   Globe,
   Lock,
@@ -408,13 +410,14 @@ const TRANSLATIONS = {
     generalInfo: 'General Info',
     governance: 'Governance & Risk',
     history: 'History',
-    reports: 'Reports'
+    reports: 'Reports',
+    logout: 'Logout'
   },
-  zh: { directoryTitle: '塞拉利昂商业目录', searchPlaceholder: '搜索...', checkName: '检查名称', login: '登录', myPortal: '我的门户', dashboard: '仪表板', search: '搜索', openData: '开放数据', langName: '中文', pendingReports: '待处理', approvedReports: '已批准', fileReport: '提交报告', editProfile: '编辑', status: '状态', revenue: '收入', txVolume: '交易量', actions: '操作', approve: '批准', reject: '拒绝', businessLogin: '企业登录', registryCode: '注册码', home: '首页', legalForm: '法律形式', registered: '注册', capital: '资本', viewDetails: '详情', details: '详情', address: '地址', topMembers: '成员', contact: '联系', email: '电邮', phone: '电话', beneficialOwners: '受益人', commercialPledges: '质押', taxStatus: '税务', goodStanding: '信誉', taxDebt: '债务', year: '年', filedBy: '提交人', visualizer: '图表', generalInfo: '信息', governance: '治理', history: '历史', reports: '报告' },
-  fr: { directoryTitle: 'Répertoire SL', searchPlaceholder: 'Recherche...', checkName: 'Vérifier', login: 'Connexion', myPortal: 'Portail', dashboard: 'Tableau', search: 'Rechercher', openData: 'Données', langName: 'Français', pendingReports: 'En attente', approvedReports: 'Approuvé', fileReport: 'Déposer', editProfile: 'Modifier', status: 'Statut', revenue: 'Revenu', txVolume: 'Volume', actions: 'Actions', approve: 'Approuver', reject: 'Rejeter', businessLogin: 'Entreprise', registryCode: 'Code', home: 'Accueil', legalForm: 'Forme', registered: 'Enregistré', capital: 'Capital', viewDetails: 'Détails', details: 'Détails', address: 'Adresse', topMembers: 'Membres', contact: 'Contact', email: 'Email', phone: 'Tél', beneficialOwners: 'Bénéficiaires', commercialPledges: 'Gages', taxStatus: 'Fiscalité', goodStanding: 'En règle', taxDebt: 'Dette', year: 'Année', filedBy: 'Par', visualizer: 'Visuel', generalInfo: 'Infos', governance: 'Gouv', history: 'Hist', reports: 'Rapports' },
-  es: { directoryTitle: 'Directorio SL', searchPlaceholder: 'Buscar...', checkName: 'Verificar', login: 'Acceso', myPortal: 'Portal', dashboard: 'Tablero', search: 'Buscar', openData: 'Datos', langName: 'Español', pendingReports: 'Pendiente', approvedReports: 'Aprobado', fileReport: 'Presentar', editProfile: 'Editar', status: 'Estado', revenue: 'Ingresos', txVolume: 'Volumen', actions: 'Acciones', approve: 'Aprobar', reject: 'Rechazar', businessLogin: 'Negocio', registryCode: 'Código', home: 'Inicio', legalForm: 'Forma', registered: 'Registrado', capital: 'Capital', viewDetails: 'Detalles', details: 'Detalles', address: 'Dirección', topMembers: 'Miembros', contact: 'Contacto', email: 'Email', phone: 'Tel', beneficialOwners: 'Dueños', commercialPledges: 'Prendas', taxStatus: 'Impuestos', goodStanding: 'Bien', taxDebt: 'Deuda', year: 'Año', filedBy: 'Por', visualizer: 'Visual', generalInfo: 'Info', governance: 'Gob', history: 'Hist', reports: 'Informes' },
-  hi: { directoryTitle: 'SL निर्देशिका', searchPlaceholder: 'खोजें...', checkName: 'जांचें', login: 'लॉग इन', myPortal: 'पोर्टल', dashboard: 'डैशबोर्ड', search: 'खोज', openData: 'डेटा', langName: 'हिन्दी', pendingReports: 'लंबित', approvedReports: 'स्वीकृत', fileReport: 'फाइल', editProfile: 'संपादित', status: 'स्थिति', revenue: 'राजस्व', txVolume: 'मात्रा', actions: 'क्रिया', approve: 'मंजूर', reject: 'रद्द', businessLogin: 'व्यापार', registryCode: 'कोड', home: 'घर', legalForm: 'रूप', registered: 'पंजीकृत', capital: 'पूंजी', viewDetails: 'विवरण', details: 'विवरण', address: 'पता', topMembers: 'सदस्य', contact: 'संपर्क', email: 'ईमेल', phone: 'फोन', beneficialOwners: 'मालिक', commercialPledges: 'गिरवी', taxStatus: 'कर', goodStanding: 'अच्छा', taxDebt: 'ऋण', year: 'वर्ष', filedBy: 'द्वारा', visualizer: 'दृश्य', generalInfo: 'सामान्य', governance: 'शासन', history: 'इतिहास', reports: 'रिपोर्ट' },
-  ru: { directoryTitle: 'Справочник SL', searchPlaceholder: 'Поиск...', checkName: 'Проверка', login: 'Вход', myPortal: 'Портал', dashboard: 'Панель', search: 'Поиск', openData: 'Данные', langName: 'Русский', pendingReports: 'Ожидание', approvedReports: 'Одобрено', fileReport: 'Подать', editProfile: 'Ред.', status: 'Статус', revenue: 'Доход', txVolume: 'Объем', actions: 'Действия', approve: 'Одобрить', reject: 'Нет', businessLogin: 'Бизнес', registryCode: 'Код', home: 'Дом', legalForm: 'Форма', registered: 'Рег.', capital: 'Капитал', viewDetails: 'Инфо', details: 'Детали', address: 'Адрес', topMembers: 'Члены', contact: 'Контакт', email: 'Email', phone: 'Тел', beneficialOwners: 'Владельцы', commercialPledges: 'Залоги', taxStatus: 'Налоги', goodStanding: 'Норм', taxDebt: 'Долг', year: 'Год', filedBy: 'Кем', visualizer: 'Схема', generalInfo: 'Инфо', governance: 'Упр.', history: 'История', reports: 'Отчеты' }
+  zh: { directoryTitle: '塞拉利昂商业目录', searchPlaceholder: '搜索...', checkName: '检查名称', login: '登录', myPortal: '我的门户', dashboard: '仪表板', search: '搜索', openData: '开放数据', langName: '中文', pendingReports: '待处理', approvedReports: '已批准', fileReport: '提交报告', editProfile: '编辑', status: '状态', revenue: '收入', txVolume: '交易量', actions: '操作', approve: '批准', reject: '拒绝', businessLogin: '企业登录', registryCode: '注册码', home: '首页', legalForm: '法律形式', registered: '注册', capital: '资本', viewDetails: '详情', details: '详情', address: '地址', topMembers: '成员', contact: '联系', email: '电邮', phone: '电话', beneficialOwners: '受益人', commercialPledges: '质押', taxStatus: '税务', goodStanding: '信誉', taxDebt: '债务', year: '年', filedBy: '提交人', visualizer: '图表', generalInfo: '信息', governance: '治理', history: '历史', reports: '报告', logout: '登出' },
+  fr: { directoryTitle: 'Répertoire SL', searchPlaceholder: 'Recherche...', checkName: 'Vérifier', login: 'Connexion', myPortal: 'Portail', dashboard: 'Tableau', search: 'Rechercher', openData: 'Données', langName: 'Français', pendingReports: 'En attente', approvedReports: 'Approuvé', fileReport: 'Déposer', editProfile: 'Modifier', status: 'Statut', revenue: 'Revenu', txVolume: 'Volume', actions: 'Actions', approve: 'Approuver', reject: 'Rejeter', businessLogin: 'Entreprise', registryCode: 'Code', home: 'Accueil', legalForm: 'Forme', registered: 'Enregistré', capital: 'Capital', viewDetails: 'Détails', details: 'Détails', address: 'Adresse', topMembers: 'Membres', contact: 'Contact', email: 'Email', phone: 'Tél', beneficialOwners: 'Bénéficiaires', commercialPledges: 'Gages', taxStatus: 'Fiscalité', goodStanding: 'En règle', taxDebt: 'Dette', year: 'Année', filedBy: 'Par', visualizer: 'Visuel', generalInfo: 'Infos', governance: 'Gouv', history: 'Hist', reports: 'Rapports', logout: 'Déconnexion' },
+  es: { directoryTitle: 'Directorio SL', searchPlaceholder: 'Buscar...', checkName: 'Verificar', login: 'Acceso', myPortal: 'Portal', dashboard: 'Tablero', search: 'Buscar', openData: 'Datos', langName: 'Español', pendingReports: 'Pendiente', approvedReports: 'Aprobado', fileReport: 'Presentar', editProfile: 'Editar', status: 'Estado', revenue: 'Ingresos', txVolume: 'Volumen', actions: 'Acciones', approve: 'Aprobar', reject: 'Rechazar', businessLogin: 'Negocio', registryCode: 'Código', home: 'Inicio', legalForm: 'Forma', registered: 'Registrado', capital: 'Capital', viewDetails: 'Detalles', details: 'Detalles', address: 'Dirección', topMembers: 'Miembros', contact: 'Contacto', email: 'Email', phone: 'Tel', beneficialOwners: 'Dueños', commercialPledges: 'Prendas', taxStatus: 'Impuestos', goodStanding: 'Bien', taxDebt: 'Deuda', year: 'Año', filedBy: 'Por', visualizer: 'Visual', generalInfo: 'Info', governance: 'Gob', history: 'Hist', reports: 'Informes', logout: 'Cerrar sesión' },
+  hi: { directoryTitle: 'SL निर्देशिका', searchPlaceholder: 'खोजें...', checkName: 'जांचें', login: 'लॉग इन', myPortal: 'पोर्टल', dashboard: 'डैशबोर्ड', search: 'खोज', openData: 'डेटा', langName: 'हिन्दी', pendingReports: 'लंबित', approvedReports: 'स्वीकृत', fileReport: 'फाइल', editProfile: 'संपादित', status: 'स्थिति', revenue: 'राजस्व', txVolume: 'मात्रा', actions: 'क्रिया', approve: 'मंजूर', reject: 'रद्द', businessLogin: 'व्यापार', registryCode: 'कोड', home: 'घर', legalForm: 'रूप', registered: 'पंजीकृत', capital: 'पूंजी', viewDetails: 'विवरण', details: 'विवरण', address: 'पता', topMembers: 'सदस्य', contact: 'संपर्क', email: 'ईमेल', phone: 'फोन', beneficialOwners: 'मालिक', commercialPledges: 'गिरवी', taxStatus: 'कर', goodStanding: 'अच्छा', taxDebt: 'ऋण', year: 'वर्ष', filedBy: 'द्वारा', visualizer: 'दृश्य', generalInfo: 'सामान्य', governance: 'शासन', history: 'इतिहास', reports: 'रिपोर्ट', logout: 'लॉग आउट' },
+  ru: { directoryTitle: 'Справочник SL', searchPlaceholder: 'Поиск...', checkName: 'Проверка', login: 'Вход', myPortal: 'Портал', dashboard: 'Панель', search: 'Поиск', openData: 'Данные', langName: 'Русский', pendingReports: 'Ожидание', approvedReports: 'Одобрено', fileReport: 'Подать', editProfile: 'Ред.', status: 'Статус', revenue: 'Доход', txVolume: 'Объем', actions: 'Действия', approve: 'Одобрить', reject: 'Нет', businessLogin: 'Бизнес', registryCode: 'Код', home: 'Дом', legalForm: 'Форма', registered: 'Рег.', capital: 'Капитал', viewDetails: 'Инфо', details: 'Детали', address: 'Адрес', topMembers: 'Члены', contact: 'Контакт', email: 'Email', phone: 'Тел', beneficialOwners: 'Владельцы', commercialPledges: 'Залоги', taxStatus: 'Налоги', goodStanding: 'Норм', taxDebt: 'Долг', year: 'Год', filedBy: 'Кем', visualizer: 'Схема', generalInfo: 'Инфо', governance: 'Упр.', history: 'История', reports: 'Отчеты', logout: 'Выход' }
 };
 
 const DATA_DICTIONARY: Record<string, Record<string, string>> = {
@@ -445,10 +448,10 @@ const SignLanguageInterpreter: React.FC<{ isActive: boolean, isSigning: boolean,
           if (src) {
             return (
               <div key={i} className="flex flex-col items-center flex-shrink-0 group">
-                <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center p-1 shadow-sm border border-blue-200 group-hover:scale-110 transition-transform">
+                <div className="w-8 h-8 sm:w-10 sm:h-10 bg-white rounded-lg flex items-center justify-center p-1 shadow-sm border border-blue-200 group-hover:scale-110 transition-transform">
                    <img src={src} alt={`Sign for ${char}`} className="w-full h-full object-contain" />
                 </div>
-                <span className="text-[9px] text-blue-100 font-bold uppercase mt-1 font-mono">{char}</span>
+                <span className="text-[8px] sm:text-[9px] text-blue-100 font-bold uppercase mt-1 font-mono">{char}</span>
               </div>
             );
           }
@@ -459,19 +462,25 @@ const SignLanguageInterpreter: React.FC<{ isActive: boolean, isSigning: boolean,
   };
 
   return (
-    <div className="fixed bottom-24 left-6 z-50 animate-fade-in-up">
-        <div className="bg-blue-900/95 backdrop-blur-xl text-white p-4 rounded-2xl shadow-2xl border border-blue-600/50 w-80 ring-1 ring-white/10">
-            <div className="flex items-center justify-between mb-3 border-b border-blue-700 pb-2">
+    <AnimatePresence>
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: 20 }}
+        className="fixed bottom-20 sm:bottom-24 left-4 sm:left-6 z-50 max-w-[calc(100vw-2rem)]"
+      >
+        <div className="bg-blue-900/95 backdrop-blur-xl text-white p-3 sm:p-4 rounded-2xl shadow-2xl border border-blue-600/50 w-64 sm:w-80 ring-1 ring-white/10">
+            <div className="flex items-center justify-between mb-2 sm:mb-3 border-b border-blue-700 pb-2">
                 <div className="flex items-center gap-2">
-                    <Hand className="w-4 h-4 text-blue-300" />
-                    <span className="text-[10px] font-bold text-blue-100 uppercase tracking-widest">ASL Interpreter</span>
+                    <Hand className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-blue-300" />
+                    <span className="text-[9px] sm:text-[10px] font-bold text-blue-100 uppercase tracking-widest">ASL Interpreter</span>
                 </div>
                 <div className={`h-2 w-2 rounded-full shadow-[0_0_10px_currentColor] ${isSigning || hoverText ? 'bg-green-400 text-green-400 animate-pulse' : 'bg-red-500 text-red-500'}`}></div>
             </div>
             {/* Interpreter View */}
-            <div className="h-28 bg-gradient-to-br from-slate-900 to-blue-950 rounded-xl mb-3 flex items-center justify-center relative overflow-hidden border border-blue-700/50 shadow-inner group">
+            <div className="h-16 sm:h-28 bg-gradient-to-br from-slate-900 to-blue-950 rounded-xl mb-2 sm:mb-3 flex items-center justify-center relative overflow-hidden border border-blue-700/50 shadow-inner group">
                 <div className={`relative transition-all duration-500 flex items-center justify-center ${isSigning || hoverText ? 'scale-100' : 'scale-90 opacity-60'}`}>
-                   <User className={`w-14 h-14 text-blue-300/20 transition-all duration-300 ${isSigning || hoverText ? 'text-blue-300 drop-shadow-[0_0_15px_rgba(147,197,253,0.5)]' : ''}`} />
+                   <User className={`w-8 h-8 sm:w-14 sm:h-14 text-blue-300/20 transition-all duration-300 ${isSigning || hoverText ? 'text-blue-300 drop-shadow-[0_0_15px_rgba(147,197,253,0.5)]' : ''}`} />
                     {(isSigning || hoverText) && (
                         <>
                             <div className="absolute top-5 -left-6 w-2 h-2 bg-blue-300 rounded-full opacity-60 animate-[ping_1s_infinite]"></div>
@@ -479,17 +488,18 @@ const SignLanguageInterpreter: React.FC<{ isActive: boolean, isSigning: boolean,
                         </>
                     )}
                 </div>
-                <div className="absolute top-2 right-2 bg-black/40 px-1.5 py-0.5 rounded text-[9px] font-bold text-blue-300 flex items-center gap-1 border border-blue-500/20">
-                    <Video className="w-2.5 h-2.5" /> LIVE
+                <div className="absolute top-2 right-2 bg-black/40 px-1.5 py-0.5 rounded text-[7px] sm:text-[9px] font-bold text-blue-300 flex items-center gap-1 border border-blue-500/20">
+                    <Video className="w-2 h-2 sm:w-2.5 sm:h-2.5" /> LIVE
                 </div>
             </div>
             
             {/* Sign Symbol Stream */}
-            <div className="min-h-[70px] bg-black/20 rounded-xl p-2.5 border border-blue-800/30 flex flex-col justify-center shadow-inner">
+            <div className="min-h-[50px] sm:min-h-[70px] bg-black/20 rounded-xl p-2 sm:p-2.5 border border-blue-800/30 flex flex-col justify-center shadow-inner">
                  {renderSignSentence(hoverText)}
             </div>
         </div>
-    </div>
+      </motion.div>
+    </AnimatePresence>
   );
 };
 
@@ -502,6 +512,7 @@ export default function App() {
   
   // Accessibility State
   const [signLanguageMode, setSignLanguageMode] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isAIThinking, setIsAIThinking] = useState(false);
   const [hoverText, setHoverText] = useState('');
 
@@ -762,29 +773,35 @@ export default function App() {
   // --- RENDERERS ---
 
   const renderNavbar = () => (
-    <nav className="bg-blue-900 text-white border-b border-blue-800 sticky top-0 z-40 shadow-xl transition-all h-20">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between h-20">
-          <div className="flex items-center cursor-pointer gap-4 group" onClick={() => setView('SEARCH')}>
-            <div className="bg-white/10 p-2.5 rounded-xl border border-white/10 group-hover:bg-white/20 transition-all">
-              <ShieldCheck className="h-7 w-7 text-blue-300" />
+    <nav className="bg-blue-900 text-white border-b border-blue-800 sticky top-0 z-40 shadow-xl transition-all h-16 sm:h-20">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full">
+        <div className="flex justify-between items-center h-full">
+          <div className="flex items-center cursor-pointer gap-3 sm:gap-4 group" onClick={() => { setView('SEARCH'); setIsMobileMenuOpen(false); }}>
+            <div className="bg-white p-1.5 sm:p-2 rounded-lg sm:rounded-xl shadow-lg border border-blue-100 group-hover:scale-105 transition-transform flex items-center justify-center">
+                <img 
+                    src="https://placehold.co/180x60/ffffff/1e3a8a?text=SBD+SL+Directory" 
+                    alt="SL Business Directory Logo" 
+                    className="h-7 sm:h-10 w-auto object-contain" 
+                />
             </div>
-            <div className="flex flex-col">
-              <h1 className="text-xl font-serif font-bold tracking-tight leading-none text-white">{t('directoryTitle')}</h1>
-              <div className="flex items-center gap-2 mt-1">
+            
+            <div className="hidden sm:flex flex-col">
+              <div className="flex items-center gap-2">
                  <div className="h-0.5 w-4 bg-blue-400 rounded-full"></div>
                  <p className="text-[10px] text-blue-300 font-bold tracking-widest uppercase">Official Registry</p>
               </div>
             </div>
           </div>
-          <div className="flex items-center gap-3">
+
+          {/* Desktop Navigation */}
+          <div className="hidden lg:flex items-center gap-3">
              <button onClick={() => setView('SEARCH')} className="p-2.5 rounded-full text-blue-300 hover:text-white hover:bg-white/10 transition-all" title={t('home')}>
                 <Home className="w-5 h-5" />
              </button>
              <button onClick={() => setSignLanguageMode(!signLanguageMode)} className={`p-2.5 rounded-full transition-all duration-300 ${signLanguageMode ? 'bg-white text-blue-900' : 'text-blue-300 hover:text-white hover:bg-white/10'}`}>
                 <Hand className="w-5 h-5" />
              </button>
-            <div className="hidden md:flex items-center bg-black/20 p-1.5 rounded-xl mr-2 gap-1 border border-white/5">
+            <div className="flex items-center bg-black/20 p-1.5 rounded-xl mr-2 gap-1 border border-white/5">
                 <span className="text-[10px] text-blue-300 font-bold uppercase tracking-wider ml-2 mr-1">Translate to</span>
                 {(['en', 'zh', 'fr', 'es', 'hi', 'ru'] as LangCode[]).map((l) => (
                     <button key={l} onClick={() => setLang(l)} className={`px-2.5 py-1 text-[10px] font-bold rounded-lg transition-all ${lang === l ? 'bg-blue-600 shadow text-white' : 'text-blue-400 hover:text-white'}`}>
@@ -792,13 +809,13 @@ export default function App() {
                     </button>
                 ))}
             </div>
-            <div className="h-8 w-px bg-white/10 mx-2 hidden sm:block"></div>
+            <div className="h-8 w-px bg-white/10 mx-2"></div>
             {currentUser ? (
                 <div className="flex items-center gap-4">
-                    <a href="https://nib.gov.sl" target="_blank" rel="noreferrer" className="hidden md:flex items-center gap-2 text-sm font-bold text-blue-300 hover:text-white">
+                    <a href="https://nib.gov.sl" target="_blank" rel="noreferrer" className="flex items-center gap-2 text-sm font-bold text-blue-300 hover:text-white">
                         <ExternalLink className="w-4 h-4" /> NIB Link
                     </a>
-                    <span className="text-sm font-semibold text-blue-100 hidden sm:block">Hi, {currentUser.name}</span>
+                    <span className="text-sm font-semibold text-blue-100">Hi, {currentUser.name}</span>
                     <button onClick={() => currentUser.role === 'ADMIN' ? setView('ADMIN_DASHBOARD') : setView('PORTAL_DASHBOARD')} className={`px-4 py-2 rounded-lg text-sm font-bold bg-blue-600 hover:bg-blue-500 border border-blue-500`}>
                         {t('dashboard')}
                     </button>
@@ -806,7 +823,7 @@ export default function App() {
                 </div>
             ) : (
                 <div className="flex items-center gap-3">
-                    <a href="https://nib.gov.sl" target="_blank" rel="noreferrer" className="hidden md:flex items-center gap-2 text-blue-200 hover:text-white px-2 py-2 font-bold text-sm">
+                    <a href="https://nib.gov.sl" target="_blank" rel="noreferrer" className="flex items-center gap-2 text-blue-200 hover:text-white px-2 py-2 font-bold text-sm">
                         <ExternalLink className="w-4 h-4" /> NIB Link
                     </a>
                     <button onClick={() => setView('PORTAL_LOGIN')} className="text-blue-200 hover:text-white px-4 py-2 font-bold text-sm flex items-center gap-2">
@@ -818,29 +835,101 @@ export default function App() {
                 </div>
             )}
           </div>
+
+          {/* Mobile Menu Toggle */}
+          <div className="lg:hidden flex items-center gap-2">
+            <button onClick={() => setSignLanguageMode(!signLanguageMode)} className={`p-2 rounded-lg transition-all ${signLanguageMode ? 'bg-white text-blue-900' : 'text-blue-300'}`}>
+                <Hand className="w-5 h-5" />
+            </button>
+            <button onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} className="p-2 text-blue-300 hover:text-white">
+                {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+            </button>
+          </div>
         </div>
       </div>
+
+      {/* Mobile Menu Overlay */}
+      <AnimatePresence>
+        {isMobileMenuOpen && (
+          <motion.div 
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            className="lg:hidden fixed inset-0 top-16 bg-blue-950 z-50 overflow-y-auto"
+          >
+            <div className="p-6 space-y-8">
+                <div className="space-y-4">
+                    <p className="text-[10px] text-blue-400 font-bold uppercase tracking-widest">Navigation</p>
+                    <button onClick={() => { setView('SEARCH'); setIsMobileMenuOpen(false); }} className="w-full flex items-center gap-4 text-lg font-bold text-white p-4 bg-white/5 rounded-xl">
+                        <Home className="w-6 h-6 text-blue-400" /> {t('home')}
+                    </button>
+                    <button onClick={() => { setView('NAME_CHECK'); setIsMobileMenuOpen(false); }} className="w-full flex items-center gap-4 text-lg font-bold text-white p-4 bg-white/5 rounded-xl">
+                        <Search className="w-6 h-6 text-blue-400" /> {t('checkName')}
+                    </button>
+                    <a href="https://nib.gov.sl" target="_blank" rel="noreferrer" className="w-full flex items-center gap-4 text-lg font-bold text-white p-4 bg-white/5 rounded-xl">
+                        <ExternalLink className="w-6 h-6 text-blue-400" /> NIB Portal
+                    </a>
+                </div>
+
+                <div className="space-y-4">
+                    <p className="text-[10px] text-blue-400 font-bold uppercase tracking-widest">Language</p>
+                    <div className="grid grid-cols-3 gap-2">
+                        {(['en', 'zh', 'fr', 'es', 'hi', 'ru'] as LangCode[]).map((l) => (
+                            <button key={l} onClick={() => { setLang(l); setIsMobileMenuOpen(false); }} className={`py-3 text-xs font-bold rounded-xl border transition-all ${lang === l ? 'bg-blue-600 border-blue-500 text-white' : 'bg-white/5 border-white/10 text-blue-300'}`}>
+                                {TRANSLATIONS[l].langName}
+                            </button>
+                        ))}
+                    </div>
+                </div>
+
+                <div className="pt-4 border-t border-white/10">
+                    {currentUser ? (
+                        <div className="space-y-4">
+                            <div className="flex items-center gap-4 p-4 bg-blue-900/50 rounded-xl border border-blue-800">
+                                <div className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center font-bold text-xl">{currentUser.name.charAt(0)}</div>
+                                <div>
+                                    <p className="font-bold text-white">{currentUser.name}</p>
+                                    <p className="text-xs text-blue-400 font-medium uppercase tracking-wider">{currentUser.role}</p>
+                                </div>
+                            </div>
+                            <button onClick={() => { currentUser.role === 'ADMIN' ? setView('ADMIN_DASHBOARD') : setView('PORTAL_DASHBOARD'); setIsMobileMenuOpen(false); }} className="w-full bg-blue-600 text-white font-bold py-4 rounded-xl shadow-lg">
+                                {t('dashboard')}
+                            </button>
+                            <button onClick={() => { handleLogout(); setIsMobileMenuOpen(false); }} className="w-full bg-red-500/10 text-red-400 font-bold py-4 rounded-xl border border-red-500/20">
+                                {t('logout') || 'Logout'}
+                            </button>
+                        </div>
+                    ) : (
+                        <button onClick={() => { setView('PORTAL_LOGIN'); setIsMobileMenuOpen(false); }} className="w-full bg-blue-600 text-white font-bold py-4 rounded-xl shadow-lg flex items-center justify-center gap-2">
+                            <Lock className="w-5 h-5" /> {t('login')}
+                        </button>
+                    )}
+                </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </nav>
   );
 
   const renderSearch = () => (
-    <div className="bg-slate-50 min-h-[calc(100vh-80px)]">
+    <div className="bg-slate-50 min-h-[calc(100vh-64px)] sm:min-h-[calc(100vh-80px)]">
       {/* Reverted to blue background for the hero section */}
-      <div className="bg-gradient-to-br from-blue-900 via-blue-800 to-blue-900 text-white pt-28 pb-20 px-4 sm:px-6 lg:px-8 relative overflow-hidden border-b border-blue-800">
+      <div className="bg-gradient-to-br from-blue-900 via-blue-800 to-blue-900 text-white pt-20 sm:pt-28 pb-16 sm:pb-20 px-4 sm:px-6 lg:px-8 relative overflow-hidden border-b border-blue-800">
         <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10"></div>
         <div className="relative max-w-4xl mx-auto text-center z-10">
-          <h2 className="text-4xl md:text-5xl font-serif font-bold tracking-tight mb-4 drop-shadow-lg">
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-serif font-bold tracking-tight mb-4 drop-shadow-lg">
             Sierra Leone <br/> <span className="text-blue-200">Business Registry</span>
           </h2>
-          <p className="text-lg text-blue-100 max-w-2xl mx-auto mb-8 font-light">
+          <p className="text-base sm:text-lg text-blue-100 max-w-2xl mx-auto mb-8 font-light">
             Verify entities, access annual reports, and conduct due diligence with blockchain-backed security.
           </p>
-          <div className="max-w-2xl mx-auto bg-white p-2 rounded-2xl shadow-2xl flex flex-col sm:flex-row gap-2 border border-slate-100 ring-1 ring-slate-200/50">
+          <div className="max-w-2xl mx-auto bg-white p-1.5 sm:p-2 rounded-xl sm:rounded-2xl shadow-2xl flex flex-col sm:flex-row gap-2 border border-slate-100 ring-1 ring-slate-200/50">
              <div className="flex-grow relative">
-                <Search className="absolute left-4 top-4 w-6 h-6 text-slate-400" />
-                <input type="text" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} placeholder={t('searchPlaceholder')} className="w-full pl-12 pr-4 py-4 rounded-xl text-slate-900 focus:outline-none text-lg bg-white placeholder:text-slate-400" />
+                <Search className="absolute left-4 top-3.5 sm:top-4 w-5 h-5 sm:w-6 sm:h-6 text-slate-400" />
+                <input type="text" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} placeholder={t('searchPlaceholder')} className="w-full pl-11 sm:pl-12 pr-4 py-3 sm:py-4 rounded-lg sm:rounded-xl text-slate-900 focus:outline-none text-base sm:text-lg bg-white placeholder:text-slate-400" />
              </div>
-             <button className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-4 rounded-xl font-bold text-lg transition-all shadow-lg">
+             <button className="bg-blue-600 hover:bg-blue-700 text-white px-6 sm:px-8 py-3 sm:py-4 rounded-lg sm:rounded-xl font-bold text-base sm:text-lg transition-all shadow-lg">
                {t('search')}
              </button>
           </div>
@@ -905,29 +994,29 @@ export default function App() {
       nextReportDue.setFullYear(nextReportDue.getFullYear() + 1);
 
       return (
-          <div className="max-w-5xl mx-auto px-4 py-12">
+          <div className="max-w-5xl mx-auto px-4 py-8 sm:py-12">
               <button onClick={() => setView('SEARCH')} className="flex items-center text-sm font-bold text-slate-500 hover:text-blue-700 mb-6"><ArrowLeft className="w-4 h-4 mr-2" /> Back to Search</button>
               
               <div className="bg-white shadow-2xl rounded-xl overflow-hidden border border-slate-200 print:shadow-none">
                   {/* Header Banner */}
-                  <div className="bg-slate-900 text-white p-8 md:p-12 relative overflow-hidden">
+                  <div className="bg-slate-900 text-white p-6 sm:p-8 md:p-12 relative overflow-hidden">
                       <div className="absolute top-0 right-0 p-8 opacity-5">
                           <ShieldCheck className="w-64 h-64" />
                       </div>
                       <div className="relative z-10 flex flex-col md:flex-row justify-between items-start gap-6">
                           <div>
-                              <div className="flex items-center gap-2 text-yellow-500 mb-2 font-bold tracking-wider text-xs uppercase">
+                              <div className="flex items-center gap-2 text-yellow-500 mb-2 font-bold tracking-wider text-[10px] sm:text-xs uppercase">
                                   <Globe className="w-4 h-4" /> Official Registry Extract
                               </div>
-                              <h1 className="text-4xl md:text-5xl font-serif font-bold leading-tight mb-2">
+                              <h1 className="text-2xl sm:text-4xl md:text-5xl font-serif font-bold leading-tight mb-2">
                                   {selectedCompany.name}
                               </h1>
-                              <p className="text-slate-300 font-mono text-lg">{selectedCompany.registryCode}</p>
+                              <p className="text-slate-300 font-mono text-sm sm:text-lg">{selectedCompany.registryCode}</p>
                           </div>
-                          <div className="text-right">
-                              <div className="inline-block px-4 py-2 border border-white/20 rounded-lg backdrop-blur-sm bg-white/5">
-                                  <p className="text-xs text-slate-300 uppercase font-bold mb-1">Current Status</p>
-                                  <p className={`text-xl font-bold ${selectedCompany.status === 'Active' ? 'text-green-400' : 'text-red-400'}`}>
+                          <div className="text-right w-full md:w-auto">
+                              <div className="inline-block px-4 py-2 border border-white/20 rounded-lg backdrop-blur-sm bg-white/5 w-full md:w-auto">
+                                  <p className="text-[10px] text-slate-300 uppercase font-bold mb-1">Current Status</p>
+                                  <p className={`text-lg sm:text-xl font-bold ${selectedCompany.status === 'Active' ? 'text-green-400' : 'text-red-400'}`}>
                                       {selectedCompany.status.toUpperCase()}
                                   </p>
                               </div>
@@ -1065,16 +1154,16 @@ export default function App() {
     ];
 
     return (
-      <div className="bg-slate-50 min-h-[calc(100vh-80px)] pb-20">
-        <div className="bg-white border-b border-slate-200 shadow-sm sticky top-20 z-30 pt-6">
+      <div className="bg-slate-50 min-h-[calc(100vh-64px)] sm:min-h-[calc(100vh-80px)] pb-20">
+        <div className="bg-white border-b border-slate-200 shadow-sm sticky top-16 sm:top-20 z-30 pt-4 sm:pt-6">
            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-              <button onClick={() => setView('SEARCH')} className="flex items-center text-sm font-bold text-slate-500 hover:text-blue-700 mb-6"><ArrowLeft className="w-4 h-4 mr-2" /> {t('directoryTitle')}</button>
-              <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-6">
-                 <div className="flex items-center gap-6">
-                    <div className="bg-blue-50 h-20 w-20 rounded-xl flex items-center justify-center border border-blue-100">{selectedCompany.businessLogo ? <img src={selectedCompany.businessLogo} className="h-full w-full object-cover rounded-xl" /> : <Building2 className="w-10 h-10 text-blue-300" />}</div>
+              <button onClick={() => setView('SEARCH')} className="flex items-center text-xs sm:text-sm font-bold text-slate-500 hover:text-blue-700 mb-4 sm:mb-6"><ArrowLeft className="w-4 h-4 mr-2" /> {t('directoryTitle')}</button>
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 sm:gap-6 pb-4 sm:pb-6">
+                 <div className="flex items-center gap-4 sm:gap-6">
+                    <div className="bg-blue-50 h-16 w-16 sm:h-20 sm:w-20 rounded-lg sm:rounded-xl flex items-center justify-center border border-blue-100 flex-shrink-0">{selectedCompany.businessLogo ? <img src={selectedCompany.businessLogo} className="h-full w-full object-cover rounded-lg sm:rounded-xl" /> : <Building2 className="w-8 h-8 sm:w-10 sm:h-10 text-blue-300" />}</div>
                     <div>
-                        <h1 className="text-3xl font-serif font-bold text-slate-900">{tData(selectedCompany.name)}</h1>
-                        <div className="flex gap-3 text-sm text-slate-600 mt-1">
+                        <h1 className="text-xl sm:text-3xl font-serif font-bold text-slate-900 leading-tight">{tData(selectedCompany.name)}</h1>
+                        <div className="flex gap-2 sm:gap-3 text-xs sm:text-sm text-slate-600 mt-1">
                             <span className="font-mono">{selectedCompany.registryCode}</span>
                             <span className="text-slate-300">|</span>
                             <span>{tData(selectedCompany.legalForm)}</span>
@@ -1082,8 +1171,8 @@ export default function App() {
                     </div>
                  </div>
                  <div className="flex gap-2">
-                     <button className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-300 rounded-lg shadow-sm text-sm font-bold text-slate-700 hover:bg-slate-50"><Download className="w-4 h-4" /> Export</button>
-                     <button onClick={() => handleDueDiligence(selectedCompany.id)} className="flex items-center gap-2 px-4 py-2 bg-blue-900 text-white rounded-lg shadow-md text-sm font-bold hover:bg-blue-800"><Briefcase className="w-4 h-4" /> Due Diligence</button>
+                     <button className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-3 sm:px-4 py-2 bg-white border border-slate-300 rounded-lg shadow-sm text-xs sm:text-sm font-bold text-slate-700 hover:bg-slate-50"><Download className="w-4 h-4" /> Export</button>
+                     <button onClick={() => handleDueDiligence(selectedCompany.id)} className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-3 sm:px-4 py-2 bg-blue-900 text-white rounded-lg shadow-md text-xs sm:text-sm font-bold hover:bg-blue-800"><Briefcase className="w-4 h-4" /> Due Diligence</button>
                  </div>
               </div>
               <div className="flex space-x-6 overflow-x-auto scrollbar-hide border-t border-slate-100 pt-1">
