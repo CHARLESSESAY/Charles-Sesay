@@ -72,6 +72,7 @@ export interface Company {
   // Business Portal Features
   transactions: Transaction[];
   isWebsitePublished: boolean;
+  password?: string; // Unique business admin password
 }
 
 export type ViewState = 'SEARCH' | 'COMPANY_DETAIL' | 'ADMIN_DASHBOARD' | 'USER_DASHBOARD' | 'NAME_CHECK' | 'OPEN_DATA' | 'DUE_DILIGENCE' | 'GENERATED_WEBSITE';

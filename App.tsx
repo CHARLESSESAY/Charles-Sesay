@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Company, LegalForm, ReportStatus, ViewState, AuditLog, AnnualReport, Transaction } from './types';
-import { generateHash, formatCurrency, formatDate } from './utils';
+import { generateHash, formatCurrency, formatDate, generatePassword } from './utils';
 import { SearchFilters } from './components/SearchFilters';
 import { AIAssistant } from './components/AIAssistant';
 import { EditCompanyDetails } from './components/EditCompanyDetails';
@@ -87,7 +87,8 @@ const INITIAL_COMPANIES: Company[] = [
       { id: 'h_a1', timestamp: '2005-01-01T09:00:00Z', action: 'REGISTRATION', details: 'Initial Registration - Mobile Operator', previousHash: '0x00000...', hash: '0x8f2a1...', actor: 'Registrar' }
     ],
     transactions: [],
-    isWebsitePublished: true
+    isWebsitePublished: true,
+    password: 'pass123'
   },
   {
     id: 'c_orange',
@@ -114,7 +115,8 @@ const INITIAL_COMPANIES: Company[] = [
       { id: 'h_ai1', timestamp: '2004-06-15T10:00:00Z', action: 'REGISTRATION', details: 'Incorporation', previousHash: '0x00000...', hash: '0x3c4d5...', actor: 'Registrar' }
     ],
     transactions: [],
-    isWebsitePublished: true
+    isWebsitePublished: true,
+    password: 'pass123'
   },
   {
     id: 'c_slcb',
@@ -141,7 +143,8 @@ const INITIAL_COMPANIES: Company[] = [
        { id: 'h_slcb1', timestamp: '1917-02-15T09:00:00Z', action: 'REGISTRATION', details: 'Oldest Bank Registered', previousHash: '0x00000...', hash: '0x1a2b3...', actor: 'Registrar' }
     ],
     transactions: [],
-    isWebsitePublished: true
+    isWebsitePublished: true,
+    password: 'pass123'
   },
   {
     id: 'c_rokel',
@@ -168,7 +171,8 @@ const INITIAL_COMPANIES: Company[] = [
        { id: 'h_rb1', timestamp: '2003-04-10T11:00:00Z', action: 'REGISTRATION', details: 'Rebranding & Registration', previousHash: '0x00000...', hash: '0x9a8b7...', actor: 'Registrar' }
     ],
     transactions: [],
-    isWebsitePublished: true
+    isWebsitePublished: true,
+    password: 'pass123'
   },
   {
     id: 'c_lantraco',
@@ -195,7 +199,8 @@ const INITIAL_COMPANIES: Company[] = [
        { id: 'h_lan1', timestamp: '1995-08-12T08:00:00Z', action: 'REGISTRATION', details: 'Logistics Company Registered', previousHash: '0x00000...', hash: '0x4d5e6...', actor: 'Registrar' }
     ],
     transactions: [],
-    isWebsitePublished: false
+    isWebsitePublished: false,
+    password: 'pass123'
   },
   {
     id: 'c_rutile',
@@ -222,7 +227,8 @@ const INITIAL_COMPANIES: Company[] = [
        { id: 'h_rut1', timestamp: '1960-01-01T09:00:00Z', action: 'REGISTRATION', details: 'Titanium Mining Incorporation', previousHash: '0x00000...', hash: '0x7f8e9...', actor: 'Registrar' }
     ],
     transactions: [],
-    isWebsitePublished: true
+    isWebsitePublished: true,
+    password: 'pass123'
   },
   {
     id: 'c_london',
@@ -250,7 +256,8 @@ const INITIAL_COMPANIES: Company[] = [
        { id: 'h_lon1', timestamp: '2005-01-01T09:00:00Z', action: 'REGISTRATION', details: 'Iron Ore Mining Registration', previousHash: '0x00000...', hash: '0x11111...', actor: 'Registrar' }
     ],
     transactions: [],
-    isWebsitePublished: false
+    isWebsitePublished: false,
+    password: 'pass123'
   },
   {
     id: 'c_nic',
@@ -277,7 +284,8 @@ const INITIAL_COMPANIES: Company[] = [
        { id: 'h_nic1', timestamp: '1976-05-20T10:00:00Z', action: 'REGISTRATION', details: 'State-owned Insurer Registered', previousHash: '0x00000...', hash: '0x5a6b7...', actor: 'Registrar' }
     ],
     transactions: [],
-    isWebsitePublished: true
+    isWebsitePublished: true,
+    password: 'pass123'
   },
   {
     id: 'c_fcsc',
@@ -304,7 +312,8 @@ const INITIAL_COMPANIES: Company[] = [
        { id: 'h_fc1', timestamp: '1980-03-15T09:00:00Z', action: 'REGISTRATION', details: 'Fisheries & Storage Registration', previousHash: '0x00000...', hash: '0x9c8d7...', actor: 'Registrar' }
     ],
     transactions: [],
-    isWebsitePublished: false
+    isWebsitePublished: false,
+    password: 'pass123'
   },
   {
     id: 'c_tejan',
@@ -331,7 +340,8 @@ const INITIAL_COMPANIES: Company[] = [
        { id: 'h_tej1', timestamp: '2010-11-05T14:30:00Z', action: 'REGISTRATION', details: 'General Merchandise Trader', previousHash: '0x00000...', hash: '0x3f4e5...', actor: 'Registrar' }
     ],
     transactions: [],
-    isWebsitePublished: false
+    isWebsitePublished: false,
+    password: 'pass123'
   }
 ];
 
@@ -361,7 +371,8 @@ const EMPTY_COMPANY: Company = {
   commercialPledges: 0,
   relationships: [],
   transactions: [],
-  isWebsitePublished: false
+  isWebsitePublished: false,
+  password: ''
 };
 
 // --- TRANSLATIONS & DICTIONARY ---
@@ -522,6 +533,8 @@ export default function App() {
     localStorage.setItem('directoryLogo', directoryLogo);
   }, [directoryLogo]);
 
+  const [registrationSuccess, setRegistrationSuccess] = useState<{name: string, pass: string} | null>(null);
+
   const capitalCities = ['Freetown', 'Bo', 'Kenema', 'Makeni', 'Koidu'];
   const [cityIndex, setCityIndex] = useState(0);
 
@@ -547,6 +560,8 @@ export default function App() {
   const [loginTab, setLoginTab] = useState<'REGISTRAR' | 'BUSINESS'>('REGISTRAR');
   const [businessIdInput, setBusinessIdInput] = useState('');
   const [phoneNumberInput, setPhoneNumberInput] = useState('');
+  const [businessPasswordInput, setBusinessPasswordInput] = useState('');
+  const [newBusinessPassword, setNewBusinessPassword] = useState('');
   
   // Registrar Credentials State
   const [registrarId, setRegistrarId] = useState('');
@@ -633,25 +648,19 @@ export default function App() {
           return;
       }
 
-      // Robust Phone Normalization
-      const cleanInput = phoneNumberInput.replace(/\D/g, '');
-      const cleanStored = company.contactPhone.replace(/\D/g, '');
-      
-      const inputSuffix = cleanInput.slice(-8); 
-      const storedSuffix = cleanStored.slice(-8);
-
-      if (inputSuffix === storedSuffix && inputSuffix.length >= 6) {
-          // Simulate generating OTP
+      if (company.password === businessPasswordInput) {
+          // Password correct, proceed to OTP for 2FA (or skip if preferred)
+          // For now, let's keep OTP as a 2FA layer
           const newOtp = Math.floor(1000 + Math.random() * 9000).toString();
           setGeneratedOtp(newOtp);
           setLoginStep('OTP');
           
           // Show simulated SMS notification
-          setMockSmsNotification(`New Message: Your SL Business Registry code is ${newOtp}`);
+          setMockSmsNotification(`New Message: Your SL Business Registry 2FA code is ${newOtp}`);
           setTimeout(() => setMockSmsNotification(null), 10000); // Clear after 10s
-
       } else {
-          alert(`Phone number mismatch. Please enter the number registered with ${company.name}.\n(Hint: It ends with ...${company.contactPhone.slice(-4)})`);
+          alert("Incorrect Business Password");
+          setBusinessPasswordInput('');
       }
   };
 
@@ -664,6 +673,7 @@ export default function App() {
              // Reset login state
              setLoginStep('CREDENTIALS');
              setOtpInput('');
+             setBusinessPasswordInput('');
              setGeneratedOtp(null);
              setMockSmsNotification(null);
           }
@@ -676,6 +686,8 @@ export default function App() {
       setCurrentUser(null); 
       setBusinessIdInput(''); 
       setPhoneNumberInput(''); 
+      setBusinessPasswordInput('');
+      setNewBusinessPassword('');
       setRegistrarId(''); 
       setRegistrarPassword(''); 
       setView('SEARCH'); 
@@ -744,12 +756,22 @@ export default function App() {
     if (currentUser?.role === 'BUSINESS') setView('PORTAL_DASHBOARD'); else setEditingCompanyId(null);
   };
 
+  const handleUpdatePassword = (companyId: string, newPass: string) => {
+    if (!newPass.trim()) return;
+    setCompanies(prev => prev.map(c => (c.id === companyId ? { ...c, password: newPass } : c)));
+    addAuditLog(companyId, 'PASSWORD_CHANGED', 'Business Admin Password Updated', currentUser?.name || 'Business Admin');
+    alert("Password updated successfully!");
+    setNewBusinessPassword('');
+  };
+
   const handleCreateCompany = (updates: Partial<Company>) => {
       const newId = `c_${Date.now()}`;
+      const generatedPass = generatePassword(10);
       const newCompany: Company = {
           ...EMPTY_COMPANY,
           ...updates,
           id: newId,
+          password: generatedPass,
           // ensure arrays are initialized if not provided
           managementBoard: updates.managementBoard || [],
           reports: [],
@@ -758,15 +780,16 @@ export default function App() {
       };
       setCompanies(prev => [newCompany, ...prev]);
       addAuditLog(newId, 'REGISTRATION', 'Initial Registration', currentUser?.name || 'Registrar');
-      alert("Entity successfully registered!");
+      setRegistrationSuccess({ name: newCompany.name, pass: generatedPass });
       setEditingCompanyId(null);
       setView('ADMIN_DASHBOARD');
   };
 
   const handleRegistrarAddEntry = (name: string, form: LegalForm, regCode: string) => {
-      const newCompany: Company = { id: `c${Date.now()}`, registryCode: regCode, name, legalForm: form, registrationDate: new Date().toISOString().split('T')[0], capital: 0, address: 'Pending', businessLogo: '', website: '', status: 'Active', managementBoard: [], contactEmail: '', contactPhone: '', beneficialOwners: [], taxDebt: 0, commercialPledges: 0, relationships: [], reports: [], history: [], transactions: [], isWebsitePublished: false };
-      setCompanies([newCompany, ...companies]);
-      alert("Entity Added to Registry");
+      const generatedPass = generatePassword(10);
+      const newCompany: Company = { id: `c${Date.now()}`, registryCode: regCode, name, legalForm: form, registrationDate: new Date().toISOString().split('T')[0], capital: 0, address: 'Pending', businessLogo: '', website: '', status: 'Active', managementBoard: [], contactEmail: '', contactPhone: '', beneficialOwners: [], taxDebt: 0, commercialPledges: 0, relationships: [], reports: [], history: [], transactions: [], isWebsitePublished: false, password: generatedPass };
+      setCompanies(prev => [newCompany, ...prev]);
+      setRegistrationSuccess({ name: newCompany.name, pass: generatedPass });
   };
 
   const handleStatusChange = (companyId: string, newStatus: string) => {
@@ -1373,10 +1396,10 @@ export default function App() {
                             <input type="text" value={businessIdInput} onChange={(e) => setBusinessIdInput(e.target.value)} className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-sm font-mono" placeholder="e.g. PV 4567" />
                         </div>
                         <div>
-                            <label className="block text-xs font-bold text-slate-500 mb-1 uppercase">Registered Phone Number</label>
-                            <input type="tel" value={phoneNumberInput} onChange={(e) => setPhoneNumberInput(e.target.value)} className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-sm" placeholder="+232..." />
+                            <label className="block text-xs font-bold text-slate-500 mb-1 uppercase">Business Password</label>
+                            <input type="password" value={businessPasswordInput} onChange={(e) => setBusinessPasswordInput(e.target.value)} className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-sm" placeholder="••••••••" />
                         </div>
-                        <button onClick={handleBusinessCredentialCheck} className="w-full bg-blue-600 text-white font-bold py-3 rounded-xl hover:bg-blue-700 transition-colors shadow-lg mt-2">Send Access Code</button>
+                        <button onClick={handleBusinessCredentialCheck} className="w-full bg-blue-600 text-white font-bold py-3 rounded-xl hover:bg-blue-700 transition-colors shadow-lg mt-2">Login to Portal</button>
                     </>
                 ) : (
                      <>
@@ -1624,7 +1647,7 @@ export default function App() {
             </div>
 
             {company.isWebsitePublished && (
-                <div className="bg-purple-50 border border-purple-100 rounded-2xl p-6 flex items-center justify-between">
+                <div className="bg-purple-50 border border-purple-100 rounded-2xl p-6 flex items-center justify-between mb-8">
                     <div>
                         <h3 className="text-purple-900 font-bold text-lg flex items-center gap-2"><Globe className="w-5 h-5" /> Live Business Site</h3>
                         <p className="text-purple-700 text-sm mt-1">Your auto-generated business website is active.</p>
@@ -1632,6 +1655,30 @@ export default function App() {
                     <button onClick={() => { setSelectedCompanyId(company.id); setView('GENERATED_WEBSITE'); }} className="bg-purple-600 text-white px-6 py-2 rounded-xl font-bold hover:bg-purple-700 shadow-md">View Site</button>
                 </div>
             )}
+
+            {/* Security Settings */}
+            <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-8">
+                <h3 className="text-lg font-bold text-slate-900 mb-6 flex items-center gap-2"><Lock className="w-5 h-5 text-red-600" /> Security Settings</h3>
+                <div className="max-w-md">
+                    <label className="block text-xs font-bold text-slate-500 mb-2 uppercase">New Business Admin Password</label>
+                    <div className="flex gap-3">
+                        <input 
+                            type="password" 
+                            value={newBusinessPassword} 
+                            onChange={(e) => setNewBusinessPassword(e.target.value)} 
+                            className="flex-grow px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-red-500 outline-none text-sm" 
+                            placeholder="Enter new password" 
+                        />
+                        <button 
+                            onClick={() => handleUpdatePassword(company.id, newBusinessPassword)}
+                            className="bg-red-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-red-700 transition-colors shadow-lg"
+                        >
+                            Update Password
+                        </button>
+                    </div>
+                    <p className="text-[10px] text-slate-400 mt-2 italic">Ensure your password is strong and kept confidential.</p>
+                </div>
+            </div>
         </div>
     );
   };
@@ -1933,6 +1980,62 @@ export default function App() {
       )}
       <AIAssistant onThinking={setIsAIThinking} />
       <SignLanguageInterpreter isActive={signLanguageMode} isSigning={isAIThinking} hoverText={hoverText} />
+
+      {/* Registration Success Modal */}
+      <AnimatePresence>
+          {registrationSuccess && (
+              <motion.div 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm"
+              >
+                  <motion.div 
+                    initial={{ scale: 0.9, y: 20 }}
+                    animate={{ scale: 1, y: 0 }}
+                    className="bg-white max-w-md w-full rounded-3xl shadow-2xl overflow-hidden border border-slate-200"
+                  >
+                      <div className="bg-green-600 p-6 text-white text-center">
+                          <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                              <CheckCircle className="w-10 h-10" />
+                          </div>
+                          <h3 className="text-2xl font-serif font-bold">Registration Successful</h3>
+                          <p className="text-green-100 text-sm mt-1">{registrationSuccess.name} is now in the registry.</p>
+                      </div>
+                      <div className="p-8 text-center">
+                          <p className="text-slate-500 text-sm mb-4 font-medium uppercase tracking-wider">Business Admin Password</p>
+                          <div className="bg-slate-100 p-6 rounded-2xl border-2 border-dashed border-slate-300 relative group">
+                              <div className="text-3xl font-mono font-bold text-slate-800 tracking-widest break-all">
+                                  {registrationSuccess.pass}
+                              </div>
+                              <button 
+                                onClick={() => {
+                                    navigator.clipboard.writeText(registrationSuccess.pass);
+                                    // Could add a "Copied!" toast here
+                                }}
+                                className="absolute -bottom-3 left-1/2 -translate-x-1/2 bg-white border border-slate-200 px-3 py-1 rounded-full text-[10px] font-bold text-slate-500 hover:text-blue-600 hover:border-blue-200 shadow-sm transition-all"
+                              >
+                                  CLICK TO COPY
+                              </button>
+                          </div>
+                          <div className="mt-8 space-y-4">
+                              <div className="bg-blue-50 p-4 rounded-xl text-left border border-blue-100">
+                                  <p className="text-xs text-blue-800 leading-relaxed">
+                                      <strong>Important:</strong> Please provide this password to the business owner. They will need it to log in to their business portal and manage their filings.
+                                  </p>
+                              </div>
+                              <button 
+                                onClick={() => setRegistrationSuccess(null)}
+                                className="w-full bg-slate-900 text-white font-bold py-4 rounded-xl hover:bg-slate-800 transition-all shadow-lg"
+                              >
+                                  Done
+                              </button>
+                          </div>
+                      </div>
+                  </motion.div>
+              </motion.div>
+          )}
+      </AnimatePresence>
     </div>
   );
 }
