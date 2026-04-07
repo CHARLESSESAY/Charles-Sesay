@@ -516,7 +516,11 @@ export default function App() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isAIThinking, setIsAIThinking] = useState(false);
   const [hoverText, setHoverText] = useState('');
-  const [directoryLogo, setDirectoryLogo] = useState('https://placehold.co/180x60/ffffff/1e3a8a?text=SBD+SL+Directory');
+  const [directoryLogo, setDirectoryLogo] = useState(() => localStorage.getItem('directoryLogo') || 'https://placehold.co/180x60/ffffff/1e3a8a?text=SBD+SL+Directory');
+
+  useEffect(() => {
+    localStorage.setItem('directoryLogo', directoryLogo);
+  }, [directoryLogo]);
 
   const capitalCities = ['Freetown', 'Bo', 'Kenema', 'Makeni', 'Koidu'];
   const [cityIndex, setCityIndex] = useState(0);
